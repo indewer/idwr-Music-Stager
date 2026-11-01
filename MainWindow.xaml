@@ -735,6 +735,125 @@
                             <TextBlock Text="✕" FontSize="12"/>
                         </Button>
                     </Grid>
+
+                    <!-- ================= TRACK REVIEW & COMPARISON (TITLE CASE DIFF) ================= -->
+                    <Border Background="#161724" BorderBrush="#2D3247" BorderThickness="1" CornerRadius="10" Margin="0,6,0,4">
+                        <StackPanel>
+                            <!-- Toggle Header Button -->
+                            <Button Click="ToggleTrackReview_Click" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="10,8" HorizontalContentAlignment="Stretch">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="hdrBd" Background="{TemplateBinding Background}" CornerRadius="9">
+                                                        <ContentPresenter/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="hdrBd" Property="Background" Value="#1E2033"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="🔍" FontSize="12" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Сравнение названий (Title Case)" Foreground="#F3F4F6" FontSize="11.5" FontWeight="SemiBold"/>
+                                        <Border Background="#312E81" CornerRadius="4" Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TrackReviewSummaryText}" Foreground="#A5B4FC" FontSize="9.5" FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Arrow indicator -->
+                                    <TextBlock Grid.Column="1" Text="{Binding TrackReviewArrow}" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Button>
+
+                            <!-- Collapsible Content -->
+                            <Border Visibility="{Binding IsTrackReviewExpanded, Converter={StaticResource BoolToVis}}" Padding="10,4,10,10" BorderBrush="#26283D" BorderThickness="0,1,0,0">
+                                <StackPanel>
+                                    <!-- Toolbar: Select all / Deselect all / Re-run Title Case -->
+                                    <Grid Margin="0,4,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Click="SelectAllRename_Click" Style="{StaticResource ChipButton}" Height="22" Padding="6,0" Margin="0,0,4,0" ToolTip="Выбрать все треки для переименования">
+                                                <TextBlock Text="✔ Выбрать все" FontSize="10"/>
+                                            </Button>
+                                            <Button Click="DeselectAllRename_Click" Style="{StaticResource ChipButton}" Height="22" Padding="6,0" Margin="0,0,4,0" Background="#1E2030" Foreground="#94A3B8" ToolTip="Оставить все названия как в оригинале">
+                                                <TextBlock Text="✖ Оставить оригиналы" FontSize="10"/>
+                                            </Button>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1" Click="TitleCaseAll_Click" Style="{StaticResource ChipButton}" Height="22" Padding="8,0" Background="#2A2438" Foreground="#FDE047" BorderBrush="#854D0E" ToolTip="Заново пересчитать Title Case">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="🔤 " FontSize="10"/>
+                                                <TextBlock Text="Title Case" FontSize="10" FontWeight="Bold"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Track Diff List -->
+                                    <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding TrackList}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#1C1E2D" BorderBrush="#2D3247" BorderThickness="1" CornerRadius="8" Padding="8,6" Margin="0,0,0,6">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="26"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <!-- Checkbox: Rename vs Keep Original -->
+                                                            <CheckBox Grid.Column="0" IsChecked="{Binding IsSelectedForRename, Mode=TwoWay}" VerticalAlignment="Top" Margin="2,4,0,0" ToolTip="Снимите галочку, чтобы исключить этот трек и оставить исходное название"/>
+
+                                                            <StackPanel Grid.Column="1" Margin="2,0,0,0">
+                                                                <!-- Old / Original row -->
+                                                                <Grid Margin="0,0,0,3">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="{Binding NumberText}" Foreground="#6B7280" FontSize="10.5" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding OriginalTitle}" Foreground="#94A3B8" FontSize="11" TextTrimming="CharacterEllipsis" FontStyle="Italic"/>
+                                                                    <TextBlock Grid.Column="2" Text="(исходное)" Foreground="#64748B" FontSize="9.5" Margin="4,0,0,0"/>
+                                                                </Grid>
+
+                                                                <!-- New Title Case row (Editable) -->
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="➔" Foreground="#818CF8" FontSize="11" FontWeight="Bold" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                                    <TextBox Grid.Column="1" Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Height="24" Padding="5,2" FontSize="11.5" Foreground="#FFFFFF"
+                                                                             IsEnabled="{Binding IsSelectedForRename}"/>
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
                     </Grid>
                 </Grid>
@@ -802,7 +921,7 @@
 
                                     <!-- Version Badge on the RIGHT -->
                                     <Border Grid.Column="1" Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
-                                        <TextBlock Text="0.1 b5" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="0.1 b6" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
 

@@ -180,7 +180,7 @@ public partial class MainWindow : Window
             _notifyIcon = new Forms.NotifyIcon
             {
                 Icon = _appIcon,
-                Text = "(idwr) Music Stager 0.1 b5",
+                Text = "(idwr) Music Stager 0.1 b6",
                 Visible = true
             };
 
@@ -361,6 +361,21 @@ public partial class MainWindow : Window
     private void DecAlbumNum_Click(object sender, RoutedEventArgs e)
     {
         _vm.AlbumNumber--;
+    }
+
+    private void ToggleTrackReview_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.ToggleTrackReview();
+    }
+
+    private void SelectAllRename_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.SelectAllTracksForRename();
+    }
+
+    private void DeselectAllRename_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.DeselectAllTracksForRename();
     }
 
     private void ToggleTrackList_Click(object sender, RoutedEventArgs e)

@@ -1,6 +1,6 @@
 # 🎵 (idwr) Music Stager
 
-[![Version](https://img.shields.io/badge/version-0.1%20b5-indigo.svg)](#)
+[![Version](https://img.shields.io/badge/version-0.1%20b6-indigo.svg)](#)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-blue.svg)](#)
 [![Framework](https://img.shields.io/badge/.NET-10.0-purple.svg)](#)
 [![Author](https://img.shields.io/badge/author-@indewer-blueviolet.svg)](https://t.me/indewer)
@@ -81,7 +81,7 @@
 
 * **Быстрый запуск:** дважды кликните по файлу `Запустить MusicStager.bat` в корне репозитория.
 * Либо запустите напрямую актуальный исполняемый файл:
-  `MusicStagerWidget\publish\idwr-Music-Stager-v0.1-b5.exe`
+  `MusicStagerWidget\publish\idwr-Music-Stager-v0.1-b6.exe`
 
 ---
 

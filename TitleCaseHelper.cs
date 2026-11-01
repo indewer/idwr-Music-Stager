@@ -57,7 +57,10 @@ public static class TitleCaseHelper
 
         string text = input.Trim();
 
-        // 1. Split CamelCase runs if any (e.g. "SomeTitle" -> "Some Title", "iLoveBeer" -> "i Love Beer")
+        // 1. Separate letters and digits (e.g. "Top10Most" -> "Top 10 Most", "Sof2047" -> "Sof 2047", "lvl70" -> "lvl 70")
+        text = Regex.Replace(text, @"(?<=[a-zA-Z])(?=\d)|(?<=\d)(?=[a-zA-Z])", " ");
+
+        // 2. Split CamelCase runs if any (e.g. "SomeTitle" -> "Some Title", "iLoveBeer" -> "i Love Beer")
         text = Regex.Replace(text, @"(?<=[a-z])(?=[A-Z])", " ");
 
         // 2. Tokenize by splitting letter runs and non-letter runs
@@ -77,8 +80,8 @@ public static class TitleCaseHelper
                     continue;
                 }
 
-                // If word is all lowercase, check if it needs word segmentation
-                if (val.Equals(val.ToLowerInvariant(), StringComparison.Ordinal))
+                // Check if word needs segmentation (even if TitleCased like Holycrud or Adecentcupofcoffee)
+                if (val.Length >= 4)
                 {
                     var subwords = WordSegmenter.Segment(val);
                     if (subwords.Count > 1)

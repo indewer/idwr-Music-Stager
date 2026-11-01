@@ -21,24 +21,71 @@ public class TrackViewModel : INotifyPropertyChanged
     public uint Number => Model.TrackNumber;
     public string NumberText => $"{Number:D2}.";
 
-    public string Title
+    private string _originalTitle = "";
+    public string OriginalTitle
     {
-        get => Model.Title;
-        set
+        get => _originalTitle;
+        private set
         {
-            if (Model.Title != value)
+            if (_originalTitle != value)
             {
-                Model.Title = value;
+                _originalTitle = value;
                 OnPropertyChanged();
             }
         }
     }
 
+    private string _newTitle = "";
+    public string NewTitle
+    {
+        get => _newTitle;
+        set
+        {
+            if (_newTitle != value)
+            {
+                _newTitle = value;
+                if (IsSelectedForRename)
+                {
+                    Model.Title = value;
+                }
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EffectiveTitle));
+                OnPropertyChanged(nameof(IsModified));
+            }
+        }
+    }
+
+    private bool _isSelectedForRename = true;
+    public bool IsSelectedForRename
+    {
+        get => _isSelectedForRename;
+        set
+        {
+            if (_isSelectedForRename != value)
+            {
+                _isSelectedForRename = value;
+                Model.Title = value ? NewTitle : OriginalTitle;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EffectiveTitle));
+            }
+        }
+    }
+
+    public string EffectiveTitle => IsSelectedForRename ? NewTitle : OriginalTitle;
+
+    public bool IsModified => !string.Equals(OriginalTitle, NewTitle, StringComparison.Ordinal);
+
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string? prop = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
 
-    public TrackViewModel(TrackMetadata model) => Model = model;
+    public TrackViewModel(TrackMetadata model)
+    {
+        Model = model;
+        _originalTitle = model.Title;
+        _newTitle = model.Title;
+        _isSelectedForRename = true;
+    }
 }
 
 public class GenreItemViewModel : INotifyPropertyChanged
@@ -336,6 +383,51 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void ToggleTrackList() => IsTrackListExpanded = !IsTrackListExpanded;
 
+    private bool _isTrackReviewExpanded = false;
+    public bool IsTrackReviewExpanded
+    {
+        get => _isTrackReviewExpanded;
+        set
+        {
+            if (SetField(ref _isTrackReviewExpanded, value))
+            {
+                OnPropertyChanged(nameof(TrackReviewArrow));
+            }
+        }
+    }
+
+    public string TrackReviewArrow => IsTrackReviewExpanded ? "▲" : "▼";
+
+    public string TrackReviewSummaryText
+    {
+        get
+        {
+            int selected = TrackList.Count(t => t.IsSelectedForRename);
+            int total = TrackList.Count;
+            return $"{selected} из {total} к замене";
+        }
+    }
+
+    public void ToggleTrackReview() => IsTrackReviewExpanded = !IsTrackReviewExpanded;
+
+    public void SelectAllTracksForRename()
+    {
+        foreach (var tr in TrackList)
+        {
+            tr.IsSelectedForRename = true;
+        }
+        OnPropertyChanged(nameof(TrackReviewSummaryText));
+    }
+
+    public void DeselectAllTracksForRename()
+    {
+        foreach (var tr in TrackList)
+        {
+            tr.IsSelectedForRename = false;
+        }
+        OnPropertyChanged(nameof(TrackReviewSummaryText));
+    }
+
     public void ApplyTitleCaseToAll()
     {
         if (_currentBatch == null || _currentBatch.Tracks.Count == 0) return;
@@ -349,10 +441,14 @@ public class MainViewModel : INotifyPropertyChanged
         // 2. Transform each track title
         foreach (var tr in TrackList)
         {
-            tr.Title = TitleCaseHelper.ToTitleCaseWithWordBreak(tr.Title);
+            string cased = TitleCaseHelper.ToTitleCaseWithWordBreak(tr.OriginalTitle);
+            tr.NewTitle = cased;
+            tr.IsSelectedForRename = true;
         }
 
-        StatusMessage = $"✔ Названия {TrackList.Count} треков и альбома приведены к Title Case!";
+        IsTrackReviewExpanded = true;
+        StatusMessage = $"✔ Title Case сформирован для {TrackList.Count} треков. Проверьте список перед импортом.";
+        OnPropertyChanged(nameof(TrackReviewSummaryText));
     }
 
     public void ApplyTitleCaseToAlbum()
@@ -699,6 +795,8 @@ public class MainViewModel : INotifyPropertyChanged
             {
                 TrackList.Add(new TrackViewModel(tr));
             }
+            IsTrackReviewExpanded = false;
+            OnPropertyChanged(nameof(TrackReviewSummaryText));
 
             StatusMessage = $"Загружено {batch.Tracks.Count} треков. Готово к проверке.";
 

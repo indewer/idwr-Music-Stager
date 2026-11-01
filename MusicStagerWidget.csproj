@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <AssemblyName>MusicStagerWidget</AssemblyName>
+    <AssemblyName>idwr-Music-Stager-v0.1-b4</AssemblyName>
     <RootNamespace>MusicStagerWidget</RootNamespace>
     <AssemblyTitle>(idwr) Music Stager</AssemblyTitle>
     <Product>(idwr) Music Stager</Product>

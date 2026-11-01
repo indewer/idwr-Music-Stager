@@ -1,0 +1,18 @@
+## Build and Output Folders
+bin/
+obj/
+publish/
+publish_standalone/
+publish_release/
+
+## Visual Studio & IDE caches
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+
+## OS generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini

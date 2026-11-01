@@ -1,0 +1,724 @@
+<Window x:Class="MusicStagerWidget.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicStagerWidget"
+        mc:Ignorable="d"
+        Title="(idwr) Music Stager" 
+        Width="440" 
+        SizeToContent="Height"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        Topmost="{Binding AlwaysOnTop}"
+        ShowInTaskbar="True"
+        FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        AllowDrop="True"
+        DragEnter="Window_DragEnter"
+        DragOver="Window_DragOver"
+        DragLeave="Window_DragLeave"
+        Drop="Window_Drop">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <local:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
+
+        <!-- Header Icon Button -->
+        <Style x:Key="HeaderIconButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#9CA3AF"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#2D3247"/>
+                                <Setter Property="Foreground" Value="#F3F4F6"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#3B4261"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Quick Chip Button -->
+        <Style x:Key="ChipButton" TargetType="Button">
+            <Setter Property="Background" Value="#25283D"/>
+            <Setter Property="Foreground" Value="#A5B4FC"/>
+            <Setter Property="BorderBrush" Value="#3B3F58"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Padding" Value="8,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#3730A3"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#6366F1"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#312E81"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Chip CheckBox (DC, dclp) -->
+        <Style x:Key="ToggleChipStyle" TargetType="CheckBox">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="tb" Background="#1E2030" BorderBrush="#3B3F58" BorderThickness="1" CornerRadius="12" Padding="8,4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="tb" Property="BorderBrush" Value="#818CF8"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="tb" Property="Background" Value="#312E81"/>
+                                <Setter TargetName="tb" Property="BorderBrush" Value="#6366F1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Release Type RadioButton -->
+        <Style x:Key="ReleaseTypeRadio" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="rb" Background="#1F2233" BorderBrush="#3B3F58" BorderThickness="1" CornerRadius="8" Padding="10,4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="rb" Property="BorderBrush" Value="#6366F1"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="rb" Property="Background" Value="#4F46E5"/>
+                                <Setter TargetName="rb" Property="BorderBrush" Value="#818CF8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Dark TextBox -->
+        <Style x:Key="DarkTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#171822"/>
+            <Setter Property="Foreground" Value="#F3F4F6"/>
+            <Setter Property="BorderBrush" Value="#353A52"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#6366F1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Primary Action Button -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#4F46E5"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="pBorder" Background="{TemplateBinding Background}" CornerRadius="10" Padding="14,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="pBorder" Property="Background" Value="#6366F1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="pBorder" Property="Background" Value="#4338CA"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="pBorder" Property="Background" Value="#2D3247"/>
+                                <Setter Property="Foreground" Value="#6B7280"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary Action Button -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#222538"/>
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="BorderBrush" Value="#3B3F58"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="sBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="12,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="sBorder" Property="Background" Value="#2C3048"/>
+                                <Setter TargetName="sBorder" Property="BorderBrush" Value="#6366F1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="sBorder" Property="Background" Value="#1E2030"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- LinkButton Style -->
+        <Style x:Key="LinkButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Main Outer Container: Glassmorphism Card -->
+    <Border Margin="6" CornerRadius="16" BorderThickness="1.2" BorderBrush="#353A52" MouseLeftButtonDown="Window_MouseDown">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#1C1D26" Offset="0.0"/>
+                <GradientStop Color="#14141B" Offset="1.0"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.5" Color="#000000"/>
+        </Border.Effect>
+
+        <Grid Margin="12,10,12,12">
+            <Grid.RowDefinitions>
+                <!-- Row 0: Header -->
+                <RowDefinition Height="Auto"/>
+                <!-- Row 1: Content (Drop Zone or Batch Editor) -->
+                <RowDefinition Height="*"/>
+                <!-- Row 2: Status / Progress -->
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ================= HEADER ================= -->
+            <Grid Grid.Row="0" Margin="0,0,0,10" Background="Transparent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: App Icon only (clean & minimal) -->
+                <Border Grid.Column="0" Width="26" Height="26" CornerRadius="7" Background="#26283B" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <!-- Vinyl / Stager Icon -->
+                    <Path Fill="#818CF8" Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"
+                          HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" Width="15" Height="15"/>
+                </Border>
+
+                <!-- Center: Quick Actions (TagScanner, iTunes) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <!-- TagScanner launch button -->
+                    <Button Click="TagScannerButton_Click" ToolTip="Открыть текущую папку в TagScanner" Margin="0,0,4,0" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource HeaderIconButton}">
+                                <Setter Property="Width" Value="Auto"/>
+                                <Setter Property="Padding" Value="6,3"/>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🏷️" FontSize="11" Margin="0,0,4,0"/>
+                            <TextBlock Text="TagScanner" Foreground="#CBD5E1" FontSize="11" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- iTunes intake folder open button -->
+                    <Button Click="OpenItunesButton_Click" ToolTip="Открыть папку 'Automatically Add to iTunes'" Margin="0,0,4,0" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource HeaderIconButton}">
+                                <Setter Property="Width" Value="Auto"/>
+                                <Setter Property="Padding" Value="6,3"/>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📂" FontSize="11" Margin="0,0,4,0"/>
+                            <TextBlock Text="iTunes" Foreground="#CBD5E1" FontSize="11" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Right: Header Controls (Pin, Minimize, Close) -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Pin (Always on top) button -->
+                    <Button Click="PinButton_Click" Margin="0,0,2,0" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Width" Value="28"/>
+                                <Setter Property="Height" Value="28"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="ToolTip" Value="Закрепить поверх всех окон"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="pinBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                                                <Path x:Name="pinIcon" Data="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" 
+                                                      Fill="#9CA3AF" Stretch="Uniform" Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="pinBorder" Property="Background" Value="#2D3247"/>
+                                                    <Setter TargetName="pinIcon" Property="Fill" Value="#F3F4F6"/>
+                                                </Trigger>
+                                                <DataTrigger Binding="{Binding AlwaysOnTop}" Value="True">
+                                                    <Setter TargetName="pinBorder" Property="Background" Value="#2A2855"/>
+                                                    <Setter TargetName="pinBorder" Property="BorderBrush" Value="#4F46E5"/>
+                                                    <Setter TargetName="pinIcon" Property="Fill" Value="#A5B4FC"/>
+                                                    <Setter Property="ToolTip" Value="Закреплено поверх всех окон"/>
+                                                </DataTrigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Settings Button -->
+                    <Button Style="{StaticResource HeaderIconButton}" Click="SettingsButton_Click" ToolTip="Настройки и пути" Margin="0,0,2,0">
+                        <Path Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" 
+                              Fill="#9CA3AF" Stretch="Uniform" Width="13" Height="13"/>
+                    </Button>
+
+                    <!-- Minimize button -->
+                    <Button Click="MinimizeButton_Click" Style="{StaticResource HeaderIconButton}" ToolTip="Свернуть в трей">
+                        <TextBlock Text="─" FontSize="11" Foreground="#9CA3AF"/>
+                    </Button>
+
+                    <!-- Close button -->
+                    <Button Click="CloseButton_Click" Style="{StaticResource HeaderIconButton}" ToolTip="Закрыть">
+                        <TextBlock Text="✕" FontSize="12" Foreground="#9CA3AF"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ================= BODY CONTENT ================= -->
+            <Grid Grid.Row="1">
+                <!-- VIEW 1: STAGER (Drop zone or Batch Editor) -->
+                <Grid Visibility="{Binding IsWidgetViewVisible, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <!-- VIEW A: EMPTY DROP ZONE -->
+                <Border x:Name="DropZoneBorder" Background="#181924" BorderBrush="#353A52" BorderThickness="1.5" CornerRadius="12" Padding="20,24" Margin="0,0,0,8"
+                        Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="BorderBrush" Value="#353A52"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsDragOver, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                    <Setter Property="BorderBrush" Value="#818CF8"/>
+                                    <Setter Property="Background" Value="#22253B"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!-- Big Icon -->
+                        <Border Width="54" Height="54" CornerRadius="14" Background="#24263B" HorizontalAlignment="Center" Margin="0,0,0,12">
+                            <Path Fill="#818CF8" Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" Width="26" Height="26"/>
+                        </Border>
+
+                        <TextBlock Text="Перетащите папку с альбомом сюда" Foreground="#F3F4F6" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="FLAC / WAV ➔ ALAC • MP3 / M4A без пережатия" Foreground="#94A3B8" FontSize="11" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+
+                        <!-- Manual browse button -->
+                        <Button Click="BrowseFolder_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Center" Height="30" Padding="14,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📁 Выбрать папку..." FontSize="11"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- VIEW B: BATCH INSPECTOR & METADATA EDITOR -->
+                <StackPanel Visibility="{Binding IsLoaded, Converter={StaticResource BoolToVis}}">
+                    
+                    <!-- Top Card: Cover & Format Info -->
+                    <Border Background="#181924" BorderBrush="#2D3247" BorderThickness="1" CornerRadius="12" Padding="10" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Cover Art Thumbnail (Clickable to change) -->
+                            <Grid Grid.Column="0" Margin="0,0,12,0" Width="84" Height="84" Cursor="Hand" MouseLeftButtonDown="CoverImage_Click" ToolTip="Нажмите, чтобы заменить обложку">
+                                <Border CornerRadius="8" Background="#202233" BorderBrush="#353A52" BorderThickness="1">
+                                    <Image Source="{Binding CoverSource}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
+                                <!-- No cover placeholder -->
+                                <TextBlock Text="📷" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="{Binding HasNoCover, Converter={StaticResource BoolToVis}}"/>
+                                <!-- 600x600 Badge -->
+                                <Border Background="#10B981" CornerRadius="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4" Padding="3,1">
+                                    <TextBlock Text="600px" Foreground="#FFFFFF" FontSize="8" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Album Summary Info -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Album}" Foreground="#FFFFFF" FontWeight="Bold" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Artist}" Foreground="#A5B4FC" FontWeight="SemiBold" FontSize="12" Margin="0,2,0,4" TextTrimming="CharacterEllipsis"/>
+                                
+                                <WrapPanel Margin="0,0,0,4">
+                                    <!-- Format pill -->
+                                    <Border Background="#25283D" CornerRadius="6" Padding="6,2" Margin="0,0,4,2">
+                                        <TextBlock Text="{Binding FormatSummary}" Foreground="#CBD5E1" FontSize="10"/>
+                                    </Border>
+                                    <!-- Tracks count -->
+                                    <Border Background="#25283D" CornerRadius="6" Padding="6,2" Margin="0,0,4,2">
+                                        <TextBlock Text="{Binding TrackCountText}" Foreground="#CBD5E1" FontSize="10"/>
+                                    </Border>
+                                </WrapPanel>
+
+                                <Button Click="OpenSourceFolder_Click" Style="{StaticResource HeaderIconButton}" Width="Auto" Height="Auto" HorizontalAlignment="Left" Padding="0" Cursor="Hand">
+                                    <TextBlock Text="📂 Открыть исходную папку" Foreground="#94A3B8" FontSize="10" TextDecorations="Underline"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tag Fields Form -->
+                    <Grid Margin="0,0,0,10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Artist (Clean) -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Артист (чистый):" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Artist, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Margin="0,2"/>
+
+                        <!-- Album Artist (With Country) + Quick Chips -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Album Artist:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
+                        <Grid Grid.Row="1" Grid.Column="1" Margin="0,2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBox Grid.Row="0" Text="{Binding AlbumArtist, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}"/>
+                            <!-- Quick country chips -->
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,2">
+                                <Button Content="+(USA)" Click="AddSuffix_Click" Tag="(USA)" Style="{StaticResource ChipButton}" Margin="0,0,4,0"/>
+                                <Button Content="+(RUS)" Click="AddSuffix_Click" Tag="(RUS)" Style="{StaticResource ChipButton}" Margin="0,0,4,0"/>
+                                <Button Content="+(UK)" Click="AddSuffix_Click" Tag="(UK)" Style="{StaticResource ChipButton}" Margin="0,0,4,0"/>
+                                <Button Content="+[BAND]" Click="AddSuffix_Click" Tag="[BAND]" Style="{StaticResource ChipButton}" Margin="0,0,4,0"/>
+                                <Button Content="+[&amp;]" Click="AddSuffix_Click" Tag="[&amp;]" Style="{StaticResource ChipButton}" Margin="0,0,4,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Album & Year -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Альбом / Год:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
+                        <Grid Grid.Row="2" Grid.Column="1" Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="65"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding Album, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Margin="0,0,4,0"/>
+                            <TextBox Grid.Column="1" Text="{Binding Year, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" HorizontalContentAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Genre -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Жанр:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Genre, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Margin="0,2"/>
+                    </Grid>
+
+                    <!-- ================= RELEASE TYPE & COMMENTS ================= -->
+                    <Border Background="#161722" BorderBrush="#2D3247" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Radio Buttons: Album, EP, Single -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                    <RadioButton Content="Альбом" IsChecked="{Binding IsAlbum}" Style="{StaticResource ReleaseTypeRadio}" Margin="0,0,4,0" Foreground="#E2E8F0" FontSize="11"/>
+                                    <RadioButton Content="EP" IsChecked="{Binding IsEP}" Style="{StaticResource ReleaseTypeRadio}" Margin="0,0,4,0" Foreground="#E2E8F0" FontSize="11"/>
+                                    <RadioButton Content="Сингл" IsChecked="{Binding IsSingle}" Style="{StaticResource ReleaseTypeRadio}" Foreground="#E2E8F0" FontSize="11"/>
+                                </StackPanel>
+
+                                <!-- Stepper for Album Number -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Visibility="{Binding IsAlbum, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="№" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <Button Click="DecAlbumNum_Click" Style="{StaticResource HeaderIconButton}" Width="20" Height="20">
+                                        <TextBlock Text="-" FontSize="11"/>
+                                    </Button>
+                                    <TextBox Text="{Binding AlbumNumber, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Width="32" Height="22" HorizontalContentAlignment="Center" Margin="2,0"/>
+                                    <Button Click="IncAlbumNum_Click" Style="{StaticResource HeaderIconButton}" Width="20" Height="20">
+                                        <TextBlock Text="+" FontSize="11"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- MusicBrainz Auto-detect status note -->
+                            <TextBlock Text="{Binding MusicBrainzStatus}" Foreground="#38BDF8" FontSize="10" Margin="0,0,0,8" TextTrimming="CharacterEllipsis"/>
+
+                            <!-- Modifiers: DC (Director's Cut) and dclp (Declipped) -->
+                            <Grid Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                    <!-- DC -->
+                                    <CheckBox IsChecked="{Binding IsDirectorCut}" Style="{StaticResource ToggleChipStyle}" Margin="0,0,6,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🎬 DC" FontSize="10" FontWeight="SemiBold" Foreground="#E2E8F0"/>
+                                            <TextBlock Text=" (Director's Cut)" FontSize="9" Foreground="#94A3B8" Margin="3,0,0,0"/>
+                                        </StackPanel>
+                                    </CheckBox>
+
+                                    <!-- dclp -->
+                                    <CheckBox IsChecked="{Binding IsDeclipped}" Style="{StaticResource ToggleChipStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="⚡ dclp" FontSize="10" FontWeight="SemiBold" Foreground="#E2E8F0"/>
+                                            <TextBlock Text=" (Declipped)" FontSize="9" Foreground="#94A3B8" Margin="3,0,0,0"/>
+                                        </StackPanel>
+                                    </CheckBox>
+                                </StackPanel>
+
+                                <!-- Resulting Comment Badge Preview -->
+                                <Border Grid.Column="1" Background="#26273B" BorderBrush="#4F46E5" BorderThickness="1" CornerRadius="6" Padding="8,3" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Comments: " Foreground="#94A3B8" FontSize="10"/>
+                                        <TextBlock Text="{Binding GeneratedComment}" Foreground="#FDE047" FontWeight="Bold" FontSize="11"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Safe Option: Delete Source -->
+                    <CheckBox IsChecked="{Binding DeleteSource}" Foreground="#94A3B8" FontSize="11" Margin="2,0,0,10">
+                        <TextBlock Text="Удалить исходные файлы после успешного импорта в iTunes"/>
+                    </CheckBox>
+
+                    <!-- Action Buttons -->
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Main Dispatch Button -->
+                        <Button Grid.Column="0" Click="DispatchToItunes_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,6,0" IsEnabled="{Binding IsNotProcessing}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🚀" FontSize="14" Margin="0,0,6,0"/>
+                                <TextBlock Text="В iTunes (Automatically Add)" FontWeight="Bold" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Open in TagScanner -->
+                        <Button Grid.Column="1" Click="TagScannerButton_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" ToolTip="Открыть текущий релиз в TagScanner">
+                            <TextBlock Text="🏷️ TagScanner" FontSize="11"/>
+                        </Button>
+
+                        <!-- Reset / Clear -->
+                        <Button Grid.Column="2" Click="ResetButton_Click" Style="{StaticResource SecondaryButton}" ToolTip="Сбросить карточку">
+                            <TextBlock Text="✕" FontSize="12"/>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+                    </Grid>
+                </Grid>
+
+                <!-- VIEW 2: SETTINGS PANEL -->
+                <Grid Visibility="{Binding IsSettingsViewVisible, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <!-- Paths Section -->
+                        <Border Background="#181924" BorderBrush="#2D3247" BorderThickness="1" CornerRadius="10" Padding="10,8" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="Папки и пути" Foreground="#A5B4FC" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,6"/>
+
+                                <TextBlock Text="iTunes (Automatically Add to iTunes):" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,2"/>
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding SettingItunesFolder, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11"/>
+                                    <Button Grid.Column="1" Click="BrowseItunesFolder_Click" Style="{StaticResource SecondaryButton}" Height="28" Padding="8,0" Margin="4,0,0,0" Content="📁"/>
+                                </Grid>
+
+                                <TextBlock Text="Путь к FFmpeg (ffmpeg.exe):" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,2"/>
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding SettingFfmpegPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11"/>
+                                    <Button Grid.Column="1" Click="BrowseFfmpeg_Click" Style="{StaticResource SecondaryButton}" Height="28" Padding="8,0" Margin="4,0,0,0" Content="📁"/>
+                                </Grid>
+
+                                <TextBlock Text="Путь к TagScanner (Tagscan.exe):" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,2"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding SettingTagScannerPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11"/>
+                                    <Button Grid.Column="1" Click="BrowseTagScanner_Click" Style="{StaticResource SecondaryButton}" Height="28" Padding="8,0" Margin="4,0,0,0" Content="📁"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- System Options -->
+                        <Border Background="#1C1E2B" BorderBrush="#2A2E42" BorderThickness="1" CornerRadius="10" Padding="10,8" Margin="0,0,0,8">
+                            <StackPanel>
+                                <CheckBox IsChecked="{Binding StartWithWindows}" Content="Запускать при старте Windows" Margin="0,0,0,6"/>
+                                <CheckBox IsChecked="{Binding AlwaysOnTop}" Content="Закрепить поверх всех окон" Margin="0,0,0,6"/>
+                                <CheckBox IsChecked="{Binding DeleteSource}" Content="Удалять исходные файлы после импорта в iTunes"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- About / Info Section (exact style as Audio Switcher) -->
+                        <Border Background="#151620" BorderBrush="#252839" BorderThickness="1" CornerRadius="10" Padding="10,8" Margin="0,0,0,10">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Title on the LEFT -->
+                                    <TextBlock Grid.Column="0" Text="(idwr) Music Stager" Foreground="#C7D2FE" FontWeight="SemiBold" FontSize="11.5" VerticalAlignment="Center"/>
+
+                                    <!-- Version Badge on the RIGHT -->
+                                    <Border Grid.Column="1" Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
+                                        <TextBlock Text="0.1 b4" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Contacts & GitHub -->
+                                <Button Style="{StaticResource LinkButton}" Click="OpenTelegram_Click" ToolTip="Открыть в Telegram">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Telegram: " Foreground="#64748B" FontSize="11"/>
+                                        <TextBlock Text="@indewer" Foreground="#818CF8" FontWeight="Medium" FontSize="11" TextDecorations="Underline"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource LinkButton}" Click="OpenEmail_Click" ToolTip="Написать на почту" Margin="0,3,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Email: " Foreground="#64748B" FontSize="11"/>
+                                        <TextBlock Text="indewer@ya.ru" Foreground="#818CF8" FontWeight="Medium" FontSize="11" TextDecorations="Underline"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource LinkButton}" Click="OpenGitHub_Click" ToolTip="Открыть репозиторий на GitHub" Margin="0,3,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="GitHub: " Foreground="#64748B" FontSize="11"/>
+                                        <TextBlock Text="idwr-Music-Stager" Foreground="#818CF8" FontWeight="Medium" FontSize="11" TextDecorations="Underline"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Save & Back Button -->
+                        <Button Style="{StaticResource PrimaryButton}" Content="Сохранить и назад" Click="SaveSettingsButton_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <!-- ================= FOOTER / STATUS ================= -->
+            <Grid Grid.Row="2" Margin="2,6,2,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Progress Bar when processing -->
+                <ProgressBar Grid.Row="0" Height="3" Value="{Binding ProgressValue}" Maximum="100" Margin="0,0,0,4"
+                             Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVis}}" Background="#25283D" Foreground="#6366F1"/>
+
+                <!-- Footer row: Left is quiet gray app title (matching Audio Switcher), Right is status -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="(idwr) Music Stager" Foreground="#555B70" FontSize="10" FontWeight="Normal" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="{Binding StatusMessage}" Foreground="#94A3B8" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0" TextTrimming="CharacterEllipsis"/>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

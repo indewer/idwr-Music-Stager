@@ -1,6 +1,6 @@
 # 🎵 (idwr) Music Stager
 
-[![Version](https://img.shields.io/badge/version-0.1%20b6-indigo.svg)](#)
+[![Version](https://img.shields.io/badge/version-0.1%20b7-indigo.svg)](#)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-blue.svg)](#)
 [![Framework](https://img.shields.io/badge/.NET-10.0-purple.svg)](#)
 [![Author](https://img.shields.io/badge/author-@indewer-blueviolet.svg)](https://t.me/indewer)
@@ -69,11 +69,18 @@
     * Поддержка мульти-выбора жанров через разделитель ` | ` (например: `Alternative | Indie Rock`) с подсветкой активных галочками `✔` и поисковым фильтром.
 
 12. **🔠 Умная сегментация слитных слов и Title Case**:
-    * Кнопка **`🔤 Title Case`** на базе алгоритма динамического программирования (Viterbi) со словарным корпусом 35 000+ слов:
-      * Автоматически распознаёт и разделяет слитные названия без пробелов (например, `adecentcupofcoffee (acoustic)` $\rightarrow$ `A Decent Cup Of Coffee (Acoustic)`, `ilovebeer (acoustic)` $\rightarrow$ `I Love Beer (Acoustic)`).
+    * Кнопка **`🔤 Title Case`** на базе алгоритма динамического программирования (Viterbi) со словарным корпусом 75 000+ слов:
+      * Автоматически распознаёт и разделяет слитные названия без пробелов (например, `adecentcupofcoffee (acoustic)` $\rightarrow$ `A Decent Cup Of Coffee (Acoustic)`, `holycrud` $\rightarrow$ `Holy Crud`, `mytop10mostbrootalbreakdownsof2047` $\rightarrow$ `My Top 10 Most Brootal Breakdowns Of 2047`).
+      * Разделяет стыки между буквами и цифрами (`Top10Most` $\rightarrow$ `Top 10 Most`).
       * Приводит каждое слово к заглавной букве (Title Case).
       * Сохраняет скобки, римские цифры (`II`, `III`, `IV`) и аббревиатуры (`VIP`, `OST`, `DJ`, `EP`, `LP`, `DC`).
-    * Выдвижная панель **`📋 Треки ▾`** для наглядного предпросмотра и ручной корректировки названий любых треков.
+    * Выдвижная панель сверки и исключений **`🔍 Сравнение названий (Title Case)`** прямо под кнопкой отправки в iTunes с возможностью исключать отдельные треки галочками `[✔]`.
+
+13. **🎤 Сохранение приглашённых исполнителей (`feat.`, `ft.`, коллаборации)**:
+    * Трековые исполнители (`Performers` / `©ART` / `TPE1`) сохраняют имена гостевых вокалистов и дуэтов (например, `Louna feat. Дмитрий Спирин из: Тараканы`, `Louna Feat. Энди Хачатурян`).
+    * Общий `Album Artist` (`Louna (RUS)`) по-прежнему объединяет весь альбом в медиатеке iTunes без расщепления релиза.
+    * Визуальное отображение и редактирование индивидуального артиста с иконкой `🎤` в списке треков.
+    * Корректная работа с сборниками разных артистов (Various Artists / VA).
 
 ---
 
@@ -81,7 +88,7 @@
 
 * **Быстрый запуск:** дважды кликните по файлу `Запустить MusicStager.bat` в корне репозитория.
 * Либо запустите напрямую актуальный исполняемый файл:
-  `MusicStagerWidget\publish\idwr-Music-Stager-v0.1-b6.exe`
+  `MusicStagerWidget\publish\idwr-Music-Stager-v0.1-b7.exe`
 
 ---
 

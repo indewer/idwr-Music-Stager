@@ -487,9 +487,18 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="26"/>
                                                     <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Column="0" Text="{Binding NumberText}" Foreground="#6B7280" FontSize="11" VerticalAlignment="Center" FontWeight="SemiBold"/>
                                                 <TextBox Grid.Column="1" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Height="24" Padding="5,2" FontSize="11"/>
+                                                <Border Grid.Column="2" Visibility="{Binding HasCustomArtist, Converter={StaticResource BoolToVis}}"
+                                                        Background="#1E1F35" BorderBrush="#3730A3" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="4,0,0,0" VerticalAlignment="Center"
+                                                        ToolTip="Индивидуальный исполнитель трека">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="🎤 " FontSize="9"/>
+                                                        <TextBlock Text="{Binding Artist}" Foreground="#A5B4FC" FontSize="9.5" TextTrimming="CharacterEllipsis" MaxWidth="150"/>
+                                                    </StackPanel>
+                                                </Border>
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
@@ -843,6 +852,18 @@
                                                                     <TextBox Grid.Column="1" Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Height="24" Padding="5,2" FontSize="11.5" Foreground="#FFFFFF"
                                                                              IsEnabled="{Binding IsSelectedForRename}"/>
                                                                 </Grid>
+
+                                                                <!-- Track-specific Artist Badge (if featured/custom) -->
+                                                                <Border Visibility="{Binding HasCustomArtist, Converter={StaticResource BoolToVis}}" 
+                                                                        Background="#1E1F35" BorderBrush="#3730A3" BorderThickness="1" CornerRadius="5" 
+                                                                        Padding="6,2" Margin="14,4,0,0" HorizontalAlignment="Left">
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="🎤 Исполнитель трека: " Foreground="#818CF8" FontSize="10" FontWeight="SemiBold"/>
+                                                                        <TextBox Text="{Binding Artist, UpdateSourceTrigger=PropertyChanged}" 
+                                                                                 Background="Transparent" BorderThickness="0" Foreground="#C7D2FE" FontSize="10" FontWeight="Medium"
+                                                                                 Padding="0" VerticalAlignment="Center"/>
+                                                                    </StackPanel>
+                                                                </Border>
                                                             </StackPanel>
                                                         </Grid>
                                                     </Border>
@@ -921,7 +942,7 @@
 
                                     <!-- Version Badge on the RIGHT -->
                                     <Border Grid.Column="1" Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
-                                        <TextBlock Text="0.1 b6" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="0.1 b7" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
 

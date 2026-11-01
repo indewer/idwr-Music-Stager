@@ -21,6 +21,31 @@ public class TrackViewModel : INotifyPropertyChanged
     public uint Number => Model.TrackNumber;
     public string NumberText => $"{Number:D2}.";
 
+    private string _detectedAlbumArtist = "";
+
+    public string Artist
+    {
+        get => Model.Artist;
+        set
+        {
+            if (Model.Artist != value)
+            {
+                Model.Artist = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HasCustomArtist));
+            }
+        }
+    }
+
+    public bool HasCustomArtist => !string.IsNullOrWhiteSpace(Artist) && 
+        !string.Equals(Artist.Trim(), _detectedAlbumArtist?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    public void UpdateDetectedAlbumArtist(string newArtist)
+    {
+        _detectedAlbumArtist = newArtist ?? "";
+        OnPropertyChanged(nameof(HasCustomArtist));
+    }
+
     private string _originalTitle = "";
     public string OriginalTitle
     {
@@ -50,6 +75,7 @@ public class TrackViewModel : INotifyPropertyChanged
                 }
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EffectiveTitle));
+                OnPropertyChanged(nameof(Title));
                 OnPropertyChanged(nameof(IsModified));
             }
         }
@@ -67,11 +93,18 @@ public class TrackViewModel : INotifyPropertyChanged
                 Model.Title = value ? NewTitle : OriginalTitle;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EffectiveTitle));
+                OnPropertyChanged(nameof(Title));
             }
         }
     }
 
     public string EffectiveTitle => IsSelectedForRename ? NewTitle : OriginalTitle;
+
+    public string Title
+    {
+        get => EffectiveTitle;
+        set => NewTitle = value;
+    }
 
     public bool IsModified => !string.Equals(OriginalTitle, NewTitle, StringComparison.Ordinal);
 
@@ -79,12 +112,13 @@ public class TrackViewModel : INotifyPropertyChanged
     protected void OnPropertyChanged([CallerMemberName] string? prop = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
 
-    public TrackViewModel(TrackMetadata model)
+    public TrackViewModel(TrackMetadata model, string detectedAlbumArtist = "")
     {
         Model = model;
         _originalTitle = model.Title;
         _newTitle = model.Title;
         _isSelectedForRename = true;
+        _detectedAlbumArtist = detectedAlbumArtist ?? "";
     }
 }
 
@@ -337,6 +371,10 @@ public class MainViewModel : INotifyPropertyChanged
                 if (!string.IsNullOrWhiteSpace(_artist))
                 {
                     AlbumArtist = _settings.GetAlbumArtist(_artist);
+                }
+                foreach (var tr in TrackList)
+                {
+                    tr.UpdateDetectedAlbumArtist(value);
                 }
             }
         }
@@ -793,7 +831,7 @@ public class MainViewModel : INotifyPropertyChanged
             TrackList.Clear();
             foreach (var tr in batch.Tracks)
             {
-                TrackList.Add(new TrackViewModel(tr));
+                TrackList.Add(new TrackViewModel(tr, batch.DetectedArtist));
             }
             IsTrackReviewExpanded = false;
             OnPropertyChanged(nameof(TrackReviewSummaryText));

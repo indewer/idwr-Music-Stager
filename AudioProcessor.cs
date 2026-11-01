@@ -21,7 +21,10 @@ public class TrackMetadata
     public uint TrackNumber { get; set; }
     public uint TotalTracks { get; set; }
     public uint DiscNumber { get; set; }
+    public uint TotalDiscs { get; set; }
     public string Comment { get; set; } = "";
+    public string Composer { get; set; } = "";
+    public string Grouping { get; set; } = "";
     public bool HasCover { get; set; }
     public byte[]? CoverData { get; set; }
     public bool IsLossless => Extension is ".flac" or ".wav" or ".ape" or ".aiff";
@@ -138,15 +141,37 @@ public static class AudioProcessor
                 var tag = tagFile.Tag;
 
                 track.Title = tag.Title ?? Path.GetFileNameWithoutExtension(file);
-                track.Artist = tag.FirstPerformer ?? tag.FirstAlbumArtist ?? "";
-                track.AlbumArtist = tag.FirstAlbumArtist ?? "";
+
+                if (tag.Performers != null && tag.Performers.Length > 0)
+                {
+                    var validPerformers = tag.Performers.Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
+                    if (validPerformers.Length > 0)
+                    {
+                        track.Artist = string.Join("; ", validPerformers);
+                    }
+                }
+                if (string.IsNullOrWhiteSpace(track.Artist))
+                {
+                    track.Artist = tag.FirstPerformer ?? tag.FirstAlbumArtist ?? "";
+                }
+
+                track.AlbumArtist = tag.FirstAlbumArtist ?? (tag.AlbumArtists != null && tag.AlbumArtists.Length > 0 ? string.Join("; ", tag.AlbumArtists.Where(a => !string.IsNullOrWhiteSpace(a))) : "");
                 track.Album = tag.Album ?? "";
                 track.Year = tag.Year;
                 track.Genre = tag.FirstGenre ?? "";
                 track.TrackNumber = tag.Track > 0 ? tag.Track : trackCounter;
                 track.TotalTracks = tag.TrackCount > 0 ? tag.TrackCount : (uint)filesToProcess.Count;
                 track.DiscNumber = tag.Disc > 0 ? tag.Disc : 1;
+                track.TotalDiscs = tag.DiscCount > 0 ? tag.DiscCount : 1;
                 track.Comment = tag.Comment ?? "";
+
+                if (tag.Composers != null && tag.Composers.Length > 0)
+                {
+                    var validComposers = tag.Composers.Where(c => !string.IsNullOrWhiteSpace(c)).ToArray();
+                    if (validComposers.Length > 0)
+                        track.Composer = string.Join("; ", validComposers);
+                }
+                track.Grouping = tag.Grouping ?? "";
 
                 if (foundCoverBytes == null && tag.Pictures != null && tag.Pictures.Length > 0)
                 {
@@ -171,7 +196,16 @@ public static class AudioProcessor
         result.OptimizedCoverBytes = foundCoverBytes;
 
         // Determine dominant album/artist info from tracks
-        result.DetectedArtist = result.Tracks.Select(t => t.Artist).FirstOrDefault(a => !string.IsNullOrWhiteSpace(a)) ?? "";
+        string detected = result.Tracks.Select(t => t.AlbumArtist).FirstOrDefault(a => !string.IsNullOrWhiteSpace(a))
+                       ?? result.Tracks.Select(t => t.Artist).FirstOrDefault(a => !string.IsNullOrWhiteSpace(a))
+                       ?? "";
+
+        var featMatch = System.Text.RegularExpressions.Regex.Match(detected, @"^(.*?)(?:\s+(?:feat\.|ft\.|featuring|with|&)\s+.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (featMatch.Success && !string.IsNullOrWhiteSpace(featMatch.Groups[1].Value))
+        {
+            detected = featMatch.Groups[1].Value.Trim();
+        }
+        result.DetectedArtist = detected;
         result.DetectedAlbum = result.Tracks.Select(t => t.Album).FirstOrDefault(a => !string.IsNullOrWhiteSpace(a)) ?? "";
         result.DetectedYear = result.Tracks.Select(t => t.Year).FirstOrDefault(y => y > 0);
         result.DetectedGenre = result.Tracks.Select(t => t.Genre).FirstOrDefault(g => !string.IsNullOrWhiteSpace(g)) ?? "";
@@ -260,8 +294,11 @@ public static class AudioProcessor
                     File.Copy(track.FilePath, readyFilePath, true);
                 }
 
+                // Determine final track artist (preserves features/duets or updates base artist)
+                string finalTrackArtist = DetermineTrackArtist(track.Artist, batch.DetectedArtist, targetArtist);
+
                 // Write tags and cover using TagLib
-                ApplyTags(readyFilePath, track, targetArtist, targetAlbumArtist, targetAlbum, targetYear, targetGenre, targetComment, coverBytes);
+                ApplyTags(readyFilePath, track, finalTrackArtist, targetAlbumArtist, targetAlbum, targetYear, targetGenre, targetComment, coverBytes);
 
                 // Move finished file directly to iTunes "Automatically Add to iTunes"
                 string destFileName = Path.GetFileName(readyFilePath);
@@ -338,10 +375,43 @@ public static class AudioProcessor
         }
     }
 
+    /// <summary>
+    /// Determines the final artist for a track, preserving guest features/duets ("feat.", "ft.")
+    /// or individual artists in compilations, while allowing base artist updates if modified.
+    /// </summary>
+    public static string DetermineTrackArtist(string trackArtist, string detectedBatchArtist, string targetArtist)
+    {
+        if (string.IsNullOrWhiteSpace(trackArtist))
+            return targetArtist?.Trim() ?? "";
+
+        string cleanTrack = trackArtist.Trim();
+        string cleanDetected = detectedBatchArtist?.Trim() ?? "";
+        string cleanTarget = targetArtist?.Trim() ?? "";
+
+        // If track artist was identical to detected album artist, update to targetArtist
+        if (string.IsNullOrEmpty(cleanDetected) || string.Equals(cleanTrack, cleanDetected, StringComparison.OrdinalIgnoreCase))
+        {
+            return !string.IsNullOrEmpty(cleanTarget) ? cleanTarget : cleanTrack;
+        }
+
+        // If track artist differs from detected album artist (e.g. "Louna feat. Дмитрий Спирин..."):
+        // If user changed the base artist prefix in UI, update that prefix
+        if (!string.IsNullOrEmpty(cleanDetected) &&
+            !string.IsNullOrEmpty(cleanTarget) &&
+            !string.Equals(cleanDetected, cleanTarget, StringComparison.OrdinalIgnoreCase) &&
+            cleanTrack.StartsWith(cleanDetected, StringComparison.OrdinalIgnoreCase))
+        {
+            return cleanTarget + cleanTrack.Substring(cleanDetected.Length);
+        }
+
+        // Otherwise preserve the exact track artist (featuring, guest, or distinct artist)
+        return cleanTrack;
+    }
+
     private static void ApplyTags(
         string filePath,
         TrackMetadata track,
-        string artist,
+        string trackArtist,
         string albumArtist,
         string album,
         uint year,
@@ -357,8 +427,8 @@ public static class AudioProcessor
             if (!string.IsNullOrWhiteSpace(track.Title))
                 tag.Title = track.Title.Trim();
 
-            if (!string.IsNullOrWhiteSpace(artist))
-                tag.Performers = new[] { artist.Trim() };
+            if (!string.IsNullOrWhiteSpace(trackArtist))
+                tag.Performers = new[] { trackArtist.Trim() };
 
             if (!string.IsNullOrWhiteSpace(albumArtist))
                 tag.AlbumArtists = new[] { albumArtist.Trim() };
@@ -383,6 +453,15 @@ public static class AudioProcessor
 
             if (track.DiscNumber > 0)
                 tag.Disc = track.DiscNumber;
+
+            if (track.TotalDiscs > 0)
+                tag.DiscCount = track.TotalDiscs;
+
+            if (!string.IsNullOrWhiteSpace(track.Composer) && (tag.Composers == null || tag.Composers.Length == 0))
+                tag.Composers = new[] { track.Composer.Trim() };
+
+            if (!string.IsNullOrWhiteSpace(track.Grouping) && string.IsNullOrWhiteSpace(tag.Grouping))
+                tag.Grouping = track.Grouping.Trim();
 
             // Embed artwork if provided
             if (coverBytes != null && coverBytes.Length > 0)

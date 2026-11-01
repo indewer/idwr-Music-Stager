@@ -86,6 +86,14 @@
             </Setter>
         </Style>
 
+        <!-- Modern Default CheckBox -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
         <!-- Toggle Chip CheckBox (DC, dclp) -->
         <Style x:Key="ToggleChipStyle" TargetType="CheckBox">
             <Setter Property="Cursor" Value="Hand"/>
@@ -462,11 +470,11 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Artist (Clean) -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Артист (чистый):" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Артист (чистый):" Foreground="#CBD5E1" FontSize="11.5" VerticalAlignment="Center"/>
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Artist, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Margin="0,2"/>
 
                         <!-- Album Artist (With Country) + Quick Chips -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Album Artist:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Album Artist:" Foreground="#CBD5E1" FontSize="11.5" VerticalAlignment="Center"/>
                         <Grid Grid.Row="1" Grid.Column="1" Margin="0,2">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -484,7 +492,7 @@
                         </Grid>
 
                         <!-- Album & Year -->
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Альбом / Год:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Альбом / Год:" Foreground="#CBD5E1" FontSize="11.5" VerticalAlignment="Center"/>
                         <Grid Grid.Row="2" Grid.Column="1" Margin="0,2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -495,7 +503,7 @@
                         </Grid>
 
                         <!-- Genre -->
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Жанр:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Жанр:" Foreground="#CBD5E1" FontSize="11.5" VerticalAlignment="Center"/>
                         <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Genre, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Margin="0,2"/>
                     </Grid>
 
@@ -568,7 +576,7 @@
                     </Border>
 
                     <!-- Safe Option: Delete Source -->
-                    <CheckBox IsChecked="{Binding DeleteSource}" Foreground="#94A3B8" FontSize="11" Margin="2,0,0,10">
+                    <CheckBox IsChecked="{Binding DeleteSource}" Foreground="#F1F5F9" FontSize="11.5" Margin="2,0,0,10">
                         <TextBlock Text="Удалить исходные файлы после успешного импорта в iTunes"/>
                     </CheckBox>
 
@@ -610,44 +618,44 @@
                             <StackPanel>
                                 <TextBlock Text="Папки и пути" Foreground="#A5B4FC" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,6"/>
 
-                                <TextBlock Text="iTunes (Automatically Add to iTunes):" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,2"/>
+                                <TextBlock Text="iTunes (Automatically Add to iTunes):" Foreground="#E2E8F0" FontSize="11" FontWeight="Medium" Margin="0,2,0,3"/>
                                 <Grid Margin="0,0,0,6">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding SettingItunesFolder, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11"/>
+                                    <TextBox Grid.Column="0" Text="{Binding SettingItunesFolder, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11.5"/>
                                     <Button Grid.Column="1" Click="BrowseItunesFolder_Click" Style="{StaticResource SecondaryButton}" Height="28" Padding="8,0" Margin="4,0,0,0" Content="📁"/>
                                 </Grid>
 
-                                <TextBlock Text="Путь к FFmpeg (ffmpeg.exe):" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,2"/>
+                                <TextBlock Text="Путь к FFmpeg (ffmpeg.exe):" Foreground="#E2E8F0" FontSize="11" FontWeight="Medium" Margin="0,2,0,3"/>
                                 <Grid Margin="0,0,0,6">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding SettingFfmpegPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11"/>
+                                    <TextBox Grid.Column="0" Text="{Binding SettingFfmpegPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11.5"/>
                                     <Button Grid.Column="1" Click="BrowseFfmpeg_Click" Style="{StaticResource SecondaryButton}" Height="28" Padding="8,0" Margin="4,0,0,0" Content="📁"/>
                                 </Grid>
 
-                                <TextBlock Text="Путь к TagScanner (Tagscan.exe):" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,2"/>
+                                <TextBlock Text="Путь к TagScanner (Tagscan.exe):" Foreground="#E2E8F0" FontSize="11" FontWeight="Medium" Margin="0,2,0,3"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding SettingTagScannerPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11"/>
+                                    <TextBox Grid.Column="0" Text="{Binding SettingTagScannerPath, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" FontSize="11.5"/>
                                     <Button Grid.Column="1" Click="BrowseTagScanner_Click" Style="{StaticResource SecondaryButton}" Height="28" Padding="8,0" Margin="4,0,0,0" Content="📁"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
                         <!-- System Options -->
-                        <Border Background="#1C1E2B" BorderBrush="#2A2E42" BorderThickness="1" CornerRadius="10" Padding="10,8" Margin="0,0,0,8">
+                        <Border Background="#1C1E2B" BorderBrush="#2A2E42" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,0,8">
                             <StackPanel>
-                                <CheckBox IsChecked="{Binding StartWithWindows}" Content="Запускать при старте Windows" Margin="0,0,0,6"/>
-                                <CheckBox IsChecked="{Binding AlwaysOnTop}" Content="Закрепить поверх всех окон" Margin="0,0,0,6"/>
-                                <CheckBox IsChecked="{Binding DeleteSource}" Content="Удалять исходные файлы после импорта в iTunes"/>
+                                <CheckBox IsChecked="{Binding StartWithWindows}" Content="Запускать при старте Windows" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"/>
+                                <CheckBox IsChecked="{Binding AlwaysOnTop}" Content="Закрепить поверх всех окон" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"/>
+                                <CheckBox IsChecked="{Binding DeleteSource}" Content="Удалять исходные файлы после импорта в iTunes" Foreground="#F3F4F6" FontSize="12.5"/>
                             </StackPanel>
                         </Border>
 
@@ -661,7 +669,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Title on the LEFT -->
-                                    <TextBlock Grid.Column="0" Text="(idwr) Music Stager" Foreground="#C7D2FE" FontWeight="SemiBold" FontSize="11.5" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="(idwr) Music Stager" Foreground="#C7D2FE" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
 
                                     <!-- Version Badge on the RIGHT -->
                                     <Border Grid.Column="1" Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
@@ -672,20 +680,20 @@
                                 <!-- Contacts & GitHub -->
                                 <Button Style="{StaticResource LinkButton}" Click="OpenTelegram_Click" ToolTip="Открыть в Telegram">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Telegram: " Foreground="#64748B" FontSize="11"/>
-                                        <TextBlock Text="@indewer" Foreground="#818CF8" FontWeight="Medium" FontSize="11" TextDecorations="Underline"/>
+                                        <TextBlock Text="Telegram: " Foreground="#94A3B8" FontSize="11.5"/>
+                                        <TextBlock Text="@indewer" Foreground="#818CF8" FontWeight="Medium" FontSize="11.5" TextDecorations="Underline"/>
                                     </StackPanel>
                                 </Button>
                                 <Button Style="{StaticResource LinkButton}" Click="OpenEmail_Click" ToolTip="Написать на почту" Margin="0,3,0,0">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Email: " Foreground="#64748B" FontSize="11"/>
-                                        <TextBlock Text="indewer@ya.ru" Foreground="#818CF8" FontWeight="Medium" FontSize="11" TextDecorations="Underline"/>
+                                        <TextBlock Text="Email: " Foreground="#94A3B8" FontSize="11.5"/>
+                                        <TextBlock Text="indewer@ya.ru" Foreground="#818CF8" FontWeight="Medium" FontSize="11.5" TextDecorations="Underline"/>
                                     </StackPanel>
                                 </Button>
                                 <Button Style="{StaticResource LinkButton}" Click="OpenGitHub_Click" ToolTip="Открыть репозиторий на GitHub" Margin="0,3,0,0">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="GitHub: " Foreground="#64748B" FontSize="11"/>
-                                        <TextBlock Text="idwr-Music-Stager" Foreground="#818CF8" FontWeight="Medium" FontSize="11" TextDecorations="Underline"/>
+                                        <TextBlock Text="GitHub: " Foreground="#94A3B8" FontSize="11.5"/>
+                                        <TextBlock Text="idwr-Music-Stager" Foreground="#818CF8" FontWeight="Medium" FontSize="11.5" TextDecorations="Underline"/>
                                     </StackPanel>
                                 </Button>
                             </StackPanel>

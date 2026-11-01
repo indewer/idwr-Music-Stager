@@ -29,6 +29,9 @@ public class AppSettings
     // Mapping: Base Artist -> Album Artist (with suffix, e.g. "The Plot In You" -> "The Plot In You (USA)")
     public Dictionary<string, string> KnownArtists { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
+    // Genre usage frequency counter: Genre -> Count (e.g. "Alternative" -> 104)
+    public Dictionary<string, int> GenreUsage { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
     private static readonly string SettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "MusicStagerWidget",
@@ -45,6 +48,12 @@ public class AppSettings
                 if (settings != null)
                 {
                     settings.KnownArtists = new Dictionary<string, string>(settings.KnownArtists ?? new(), StringComparer.OrdinalIgnoreCase);
+                    settings.GenreUsage = new Dictionary<string, int>(settings.GenreUsage ?? new(), StringComparer.OrdinalIgnoreCase);
+                    if (settings.GenreUsage.Count == 0)
+                    {
+                        settings.ScanExistingItunesGenres();
+                        settings.Save();
+                    }
                     return settings;
                 }
             }
@@ -53,6 +62,8 @@ public class AppSettings
 
         var def = new AppSettings();
         def.ScanExistingItunesLibrary();
+        def.ScanExistingItunesGenres();
+        def.Save();
         return def;
     }
 
@@ -154,5 +165,116 @@ public class AppSettings
         if (string.IsNullOrWhiteSpace(baseArtist)) return;
         KnownArtists[baseArtist.Trim()] = albumArtist.Trim();
         Save();
+    }
+
+    /// <summary>
+    /// Scans iTunes Music Library.xml to extract existing genre usage frequencies.
+    /// </summary>
+    public void ScanExistingItunesGenres()
+    {
+        try
+        {
+            var candidates = new List<string>();
+
+            // Try relative to iTunes import folder
+            if (!string.IsNullOrEmpty(ItunesImportFolder))
+            {
+                var dir1 = Path.GetDirectoryName(ItunesImportFolder); // ...\iTunes Media
+                if (dir1 != null)
+                {
+                    var itunesDir = Path.GetDirectoryName(dir1); // ...\iTunes
+                    if (itunesDir != null)
+                    {
+                        candidates.Add(Path.Combine(itunesDir, "iTunes Music Library.xml"));
+                        candidates.Add(Path.Combine(itunesDir, "iTunes Library.xml"));
+                    }
+                }
+            }
+
+            // Fallback locations
+            candidates.Add(@"Z:\Заземление 2026 - Музыка\iTunes\iTunes Music Library.xml");
+            candidates.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), "iTunes", "iTunes Music Library.xml"));
+
+            string? xmlPath = candidates.FirstOrDefault(File.Exists);
+            if (xmlPath == null) return;
+
+            string content = File.ReadAllText(xmlPath);
+            var matches = System.Text.RegularExpressions.Regex.Matches(content, @"<key>Genre</key><string>([^<]+)</string>");
+
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                string rawGenre = match.Groups[1].Value;
+                // Unescape XML entities like &#38; -> &
+                rawGenre = System.Net.WebUtility.HtmlDecode(rawGenre);
+
+                var parts = rawGenre.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var p in parts)
+                {
+                    string g = p.Trim();
+                    if (!string.IsNullOrEmpty(g))
+                    {
+                        if (GenreUsage.ContainsKey(g))
+                            GenreUsage[g]++;
+                        else
+                            GenreUsage[g] = 1;
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    /// <summary>
+    /// Increments usage counter for each genre in a pipe-separated string and saves settings.
+    /// </summary>
+    public void RegisterGenreUsage(string genreString)
+    {
+        if (string.IsNullOrWhiteSpace(genreString)) return;
+
+        var parts = genreString.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        bool modified = false;
+
+        foreach (var p in parts)
+        {
+            string g = p.Trim();
+            if (!string.IsNullOrEmpty(g))
+            {
+                if (GenreUsage.ContainsKey(g))
+                    GenreUsage[g]++;
+                else
+                    GenreUsage[g] = 1;
+
+                modified = true;
+            }
+        }
+
+        if (modified)
+        {
+            Save();
+        }
+    }
+
+    public List<KeyValuePair<string, int>> GetTopGenres()
+    {
+        if (GenreUsage == null || GenreUsage.Count == 0)
+        {
+            // Seed defaults if nothing yet
+            return new List<KeyValuePair<string, int>>
+            {
+                new("Alternative", 10),
+                new("Indie Rock", 8),
+                new("Metalcore", 7),
+                new("Rock", 6),
+                new("Electronic", 5),
+                new("Post-Hardcore", 4),
+                new("Hip-Hop", 3),
+                new("Pop-Rock", 2)
+            };
+        }
+
+        return GenreUsage
+            .OrderByDescending(kv => kv.Value)
+            .ThenBy(kv => kv.Key)
+            .ToList();
     }
 }

@@ -8,17 +8,24 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <AssemblyName>idwr-Music-Stager-v0.1-b4</AssemblyName>
+    <AssemblyName>idwr-Music-Stager-v0.1-b5</AssemblyName>
     <RootNamespace>MusicStagerWidget</RootNamespace>
     <AssemblyTitle>(idwr) Music Stager</AssemblyTitle>
     <Product>(idwr) Music Stager</Product>
-    <Version>0.1.0-b4</Version>
-    <FileVersion>0.1.0.4</FileVersion>
+    <Version>0.1.0-b5</Version>
+    <FileVersion>0.1.0.5</FileVersion>
     <Authors>indewer</Authors>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\words_freq.txt.gz" />
+    <None Update="Resources\words_freq.txt.gz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

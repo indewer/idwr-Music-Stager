@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +14,57 @@ using WpfMessageBox = System.Windows.MessageBox;
 using WpfApplication = System.Windows.Application;
 
 namespace MusicStagerWidget;
+
+public class TrackViewModel : INotifyPropertyChanged
+{
+    public TrackMetadata Model { get; }
+    public uint Number => Model.TrackNumber;
+    public string NumberText => $"{Number:D2}.";
+
+    public string Title
+    {
+        get => Model.Title;
+        set
+        {
+            if (Model.Title != value)
+            {
+                Model.Title = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? prop = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+
+    public TrackViewModel(TrackMetadata model) => Model = model;
+}
+
+public class GenreItemViewModel : INotifyPropertyChanged
+{
+    public string Name { get; set; } = "";
+    public int Count { get; set; }
+    public string CountBadge => $"{Count}×";
+
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected != value)
+            {
+                _isSelected = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? prop = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+}
 
 public class MainViewModel : INotifyPropertyChanged
 {
@@ -262,7 +316,176 @@ public class MainViewModel : INotifyPropertyChanged
     public string Genre
     {
         get => _genre;
-        set => SetField(ref _genre, value);
+        set
+        {
+            if (SetField(ref _genre, value))
+            {
+                UpdateGenreSelectionFlags();
+            }
+        }
+    }
+
+    public ObservableCollection<TrackViewModel> TrackList { get; } = new();
+
+    private bool _isTrackListExpanded = false;
+    public bool IsTrackListExpanded
+    {
+        get => _isTrackListExpanded;
+        set => SetField(ref _isTrackListExpanded, value);
+    }
+
+    public void ToggleTrackList() => IsTrackListExpanded = !IsTrackListExpanded;
+
+    public void ApplyTitleCaseToAll()
+    {
+        if (_currentBatch == null || _currentBatch.Tracks.Count == 0) return;
+
+        // 1. Transform Album title
+        if (!string.IsNullOrWhiteSpace(Album))
+        {
+            Album = TitleCaseHelper.ToTitleCaseWithWordBreak(Album);
+        }
+
+        // 2. Transform each track title
+        foreach (var tr in TrackList)
+        {
+            tr.Title = TitleCaseHelper.ToTitleCaseWithWordBreak(tr.Title);
+        }
+
+        StatusMessage = $"✔ Названия {TrackList.Count} треков и альбома приведены к Title Case!";
+    }
+
+    public void ApplyTitleCaseToAlbum()
+    {
+        if (!string.IsNullOrWhiteSpace(Album))
+        {
+            Album = TitleCaseHelper.ToTitleCaseWithWordBreak(Album);
+        }
+    }
+
+    // --- Genre Popup and Selection Management ---
+    public ObservableCollection<GenreItemViewModel> FilteredGenres { get; } = new();
+    private List<GenreItemViewModel> _allGenres = new();
+
+    private bool _isGenrePopupOpen = false;
+    public bool IsGenrePopupOpen
+    {
+        get => _isGenrePopupOpen;
+        set => SetField(ref _isGenrePopupOpen, value);
+    }
+
+    private string _genreSearchText = "";
+    public string GenreSearchText
+    {
+        get => _genreSearchText;
+        set
+        {
+            if (SetField(ref _genreSearchText, value))
+            {
+                OnPropertyChanged(nameof(HasGenreSearchText));
+                OnPropertyChanged(nameof(CanAddCustomGenre));
+                OnPropertyChanged(nameof(AddCustomGenrePrompt));
+                FilterGenreList();
+            }
+        }
+    }
+
+    public bool HasGenreSearchText => !string.IsNullOrWhiteSpace(_genreSearchText);
+
+    public bool CanAddCustomGenre
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_genreSearchText)) return false;
+            string clean = _genreSearchText.Trim();
+            return !_allGenres.Any(g => g.Name.Equals(clean, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    public string AddCustomGenrePrompt => $"+ Добавить «{_genreSearchText.Trim()}»";
+
+    public void OpenGenrePopup()
+    {
+        RefreshGenreItems();
+        IsGenrePopupOpen = true;
+    }
+
+    public void RefreshGenreItems()
+    {
+        var top = _settings.GetTopGenres();
+        var selectedList = ParseCurrentGenres();
+
+        _allGenres = top.Select(kv => new GenreItemViewModel
+        {
+            Name = kv.Key,
+            Count = kv.Value,
+            IsSelected = selectedList.Contains(kv.Key, StringComparer.OrdinalIgnoreCase)
+        }).ToList();
+
+        FilterGenreList();
+    }
+
+    private void FilterGenreList()
+    {
+        FilteredGenres.Clear();
+        string filter = _genreSearchText.Trim();
+        var items = string.IsNullOrEmpty(filter)
+            ? _allGenres
+            : _allGenres.Where(g => g.Name.Contains(filter, StringComparison.OrdinalIgnoreCase));
+
+        foreach (var item in items)
+        {
+            FilteredGenres.Add(item);
+        }
+    }
+
+    public void ToggleGenre(string genreName)
+    {
+        if (string.IsNullOrWhiteSpace(genreName)) return;
+
+        var selected = ParseCurrentGenres();
+        int existingIdx = selected.FindIndex(g => g.Equals(genreName, StringComparison.OrdinalIgnoreCase));
+
+        if (existingIdx >= 0)
+        {
+            selected.RemoveAt(existingIdx);
+        }
+        else
+        {
+            selected.Add(genreName.Trim());
+        }
+
+        Genre = string.Join(" | ", selected);
+        UpdateGenreSelectionFlags();
+    }
+
+    public void AddCustomGenre()
+    {
+        string newName = _genreSearchText.Trim();
+        if (string.IsNullOrEmpty(newName)) return;
+
+        _settings.RegisterGenreUsage(newName);
+        ToggleGenre(newName);
+        GenreSearchText = "";
+        RefreshGenreItems();
+    }
+
+    private List<string> ParseCurrentGenres()
+    {
+        if (string.IsNullOrWhiteSpace(Genre)) return new List<string>();
+        return Genre.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(g => g.Trim())
+                    .Where(g => !string.IsNullOrEmpty(g))
+                    .ToList();
+    }
+
+    private void UpdateGenreSelectionFlags()
+    {
+        var selected = ParseCurrentGenres();
+        foreach (var g in _allGenres)
+        {
+            g.IsSelected = selected.Contains(g.Name, StringComparer.OrdinalIgnoreCase);
+        }
     }
 
     public string TrackCountText
@@ -471,6 +694,12 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(HasCover));
 
             IsLoaded = true;
+            TrackList.Clear();
+            foreach (var tr in batch.Tracks)
+            {
+                TrackList.Add(new TrackViewModel(tr));
+            }
+
             StatusMessage = $"Загружено {batch.Tracks.Count} треков. Готово к проверке.";
 
             // Start background MusicBrainz lookup for album number
@@ -640,6 +869,12 @@ public class MainViewModel : INotifyPropertyChanged
         if (!string.IsNullOrWhiteSpace(Artist) && !string.IsNullOrWhiteSpace(AlbumArtist))
         {
             _settings.RegisterArtist(Artist, AlbumArtist);
+        }
+
+        // Save genre to dictionary and update frequency
+        if (!string.IsNullOrWhiteSpace(Genre))
+        {
+            _settings.RegisterGenreUsage(Genre);
         }
 
         IsProcessing = true;

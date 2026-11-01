@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 using Forms = System.Windows.Forms;
 using WpfMessageBox = System.Windows.MessageBox;
+using WpfApplication = System.Windows.Application;
 
 namespace MusicStagerWidget;
 
@@ -25,7 +26,9 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        App.Log("MainWindow ctor entered");
         InitializeComponent();
+        App.Log("MainWindow InitializeComponent finished");
 
         _settings = AppSettings.Load();
         _vm = new MainViewModel(_settings);
@@ -37,16 +40,20 @@ public partial class MainWindow : Window
 
         Loaded += MainWindow_Loaded;
         Closing += MainWindow_Closing;
+        Closed += (s, e) => App.Log($"MainWindow Closed event: isExplicit={_isExplicitExit}");
         LocationChanged += MainWindow_LocationChanged;
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
 
         InitTrayIcon();
+        App.Log("MainWindow ctor finished");
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        App.Log("MainWindow_Loaded entered");
         RestorePosition();
         _isFullyLoaded = true;
+        App.Log("MainWindow_Loaded finished");
     }
 
     private void OnDisplaySettingsChanged(object? sender, EventArgs e)
@@ -146,11 +153,13 @@ public partial class MainWindow : Window
 
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        App.Log($"MainWindow_Closing entered: isExplicitExit={_isExplicitExit}");
         if (!_isExplicitExit)
         {
             // Minimize to tray on close
             e.Cancel = true;
             Hide();
+            App.Log("MainWindow_Closing: canceled and hidden to tray");
             return;
         }
 
@@ -161,6 +170,7 @@ public partial class MainWindow : Window
             _notifyIcon = null;
         }
         _appIcon?.Dispose();
+        App.Log("MainWindow_Closing finished");
     }
 
     private void InitTrayIcon()
@@ -170,7 +180,7 @@ public partial class MainWindow : Window
             _notifyIcon = new Forms.NotifyIcon
             {
                 Icon = _appIcon,
-                Text = "(idwr) Music Stager 0.1 b4",
+                Text = "(idwr) Music Stager 0.1 b5",
                 Visible = true
             };
 
@@ -182,6 +192,7 @@ public partial class MainWindow : Window
             {
                 _isExplicitExit = true;
                 Close();
+                WpfApplication.Current.Shutdown();
             });
 
             _notifyIcon.ContextMenuStrip = contextMenu;
@@ -350,6 +361,39 @@ public partial class MainWindow : Window
     private void DecAlbumNum_Click(object sender, RoutedEventArgs e)
     {
         _vm.AlbumNumber--;
+    }
+
+    private void ToggleTrackList_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.ToggleTrackList();
+    }
+
+    private void TitleCaseAll_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.ApplyTitleCaseToAll();
+    }
+
+    private void AlbumTitleCase_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.ApplyTitleCaseToAlbum();
+    }
+
+    private void GenreDropdownBtn_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.OpenGenrePopup();
+    }
+
+    private void GenreItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.Tag is string genreName)
+        {
+            _vm.ToggleGenre(genreName);
+        }
+    }
+
+    private void AddCustomGenre_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.AddCustomGenre();
     }
 
     private async void DispatchToItunes_Click(object sender, RoutedEventArgs e)

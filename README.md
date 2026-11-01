@@ -1,6 +1,6 @@
 # 🎵 (idwr) Music Stager
 
-[![Version](https://img.shields.io/badge/version-0.1%20b4-indigo.svg)](#)
+[![Version](https://img.shields.io/badge/version-0.1%20b5-indigo.svg)](#)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-blue.svg)](#)
 [![Framework](https://img.shields.io/badge/.NET-10.0-purple.svg)](#)
 [![Author](https://img.shields.io/badge/author-@indewer-blueviolet.svg)](https://t.me/indewer)
@@ -63,13 +63,25 @@
 10. **🔗 Быстрый запуск TagScanner**:
     * Кнопка **«🏷️ TagScanner»** в шапке открывает текущую сброшенную папку в `C:\Program Files\TagScanner\Tagscan.exe` для любых глубоких ручных правок.
 
+11. **🏷️ Выбор жанров по частоте и мульти-селектор (` | `)**:
+    * Кнопка `🏷️ ▾` открывает всплывающее меню популярных жанров, отсортированных по частоте использования в библиотеке.
+    * Автоматический сбор статистики из библиотеки iTunes (`iTunes Music Library.xml`) и учёт каждого нового импорта.
+    * Поддержка мульти-выбора жанров через разделитель ` | ` (например: `Alternative | Indie Rock`) с подсветкой активных галочками `✔` и поисковым фильтром.
+
+12. **🔠 Умная сегментация слитных слов и Title Case**:
+    * Кнопка **`🔤 Title Case`** на базе алгоритма динамического программирования (Viterbi) со словарным корпусом 35 000+ слов:
+      * Автоматически распознаёт и разделяет слитные названия без пробелов (например, `adecentcupofcoffee (acoustic)` $\rightarrow$ `A Decent Cup Of Coffee (Acoustic)`, `ilovebeer (acoustic)` $\rightarrow$ `I Love Beer (Acoustic)`).
+      * Приводит каждое слово к заглавной букве (Title Case).
+      * Сохраняет скобки, римские цифры (`II`, `III`, `IV`) и аббревиатуры (`VIP`, `OST`, `DJ`, `EP`, `LP`, `DC`).
+    * Выдвижная панель **`📋 Треки ▾`** для наглядного предпросмотра и ручной корректировки названий любых треков.
+
 ---
 
 ## 🚀 Запуск
 
 * **Быстрый запуск:** дважды кликните по файлу `Запустить MusicStager.bat` в корне репозитория.
-* Либо запустите напрямую:
-  `MusicStagerWidget\publish\MusicStagerWidget.exe`
+* Либо запустите напрямую актуальный исполняемый файл:
+  `MusicStagerWidget\publish\idwr-Music-Stager-v0.1-b5.exe`
 
 ---
 

@@ -443,10 +443,23 @@
                                     <Border Background="#25283D" CornerRadius="6" Padding="6,2" Margin="0,0,4,2">
                                         <TextBlock Text="{Binding FormatSummary}" Foreground="#CBD5E1" FontSize="10"/>
                                     </Border>
-                                    <!-- Tracks count -->
-                                    <Border Background="#25283D" CornerRadius="6" Padding="6,2" Margin="0,0,4,2">
-                                        <TextBlock Text="{Binding TrackCountText}" Foreground="#CBD5E1" FontSize="10"/>
-                                    </Border>
+                                    <!-- Tracks count pill / expand toggle -->
+                                    <Button Click="ToggleTrackList_Click" ToolTip="Показать или скрыть список треков"
+                                            Style="{StaticResource ChipButton}" Background="#25283D" Foreground="#CBD5E1" BorderBrush="#353A52" Height="22" Margin="0,0,4,2">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="📋 " FontSize="10"/>
+                                            <TextBlock Text="{Binding TrackCountText}" FontSize="10"/>
+                                            <TextBlock Text=" ▾" FontSize="9" Foreground="#94A3B8"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <!-- Title Case button for all tracks and album -->
+                                    <Button Click="TitleCaseAll_Click" ToolTip="Разбить слитные слова (adecentcupofcoffee ➔ A Decent Cup Of Coffee) и применить Title Case ко всем трекам и альбому"
+                                            Style="{StaticResource ChipButton}" Background="#2A2438" Foreground="#FDE047" BorderBrush="#854D0E" Height="22" Margin="0,0,4,2">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🔤 " FontSize="10"/>
+                                            <TextBlock Text="Title Case" FontSize="10" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </Button>
                                 </WrapPanel>
 
                                 <Button Click="OpenSourceFolder_Click" Style="{StaticResource HeaderIconButton}" Width="Auto" Height="Auto" HorizontalAlignment="Left" Padding="0" Cursor="Hand">
@@ -454,6 +467,35 @@
                                 </Button>
                             </StackPanel>
                         </Grid>
+                    </Border>
+
+                    <!-- Expandable Track List Drawer -->
+                    <Border Background="#161724" BorderBrush="#2D3247" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,0,10"
+                            Visibility="{Binding IsTrackListExpanded, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,6">
+                                <TextBlock Text="Список треков (редактируемый):" Foreground="#94A3B8" FontSize="10.5" VerticalAlignment="Center"/>
+                                <Button Click="TitleCaseAll_Click" Style="{StaticResource HeaderIconButton}" Width="Auto" Height="20" HorizontalAlignment="Right" Padding="4,0" ToolTip="Применить Title Case ко всем трекам">
+                                    <TextBlock Text="🔤 Разбить и капитализировать всё" FontSize="10" Foreground="#FDE047"/>
+                                </Button>
+                            </Grid>
+                            <ScrollViewer MaxHeight="140" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding TrackList}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="26"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding NumberText}" Foreground="#6B7280" FontSize="11" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                                <TextBox Grid.Column="1" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Height="24" Padding="5,2" FontSize="11"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
                     </Border>
 
                     <!-- Tag Fields Form -->
@@ -496,15 +538,102 @@
                         <Grid Grid.Row="2" Grid.Column="1" Margin="0,2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="65"/>
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0" Text="{Binding Album, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Margin="0,0,4,0"/>
-                            <TextBox Grid.Column="1" Text="{Binding Year, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" HorizontalContentAlignment="Center"/>
+                            <Button Grid.Column="1" Click="AlbumTitleCase_Click" ToolTip="Применить Title Case к названию альбома"
+                                    Style="{StaticResource ChipButton}" Height="28" Padding="6,0" Margin="0,0,4,0">
+                                <TextBlock Text="Aa" FontSize="10" FontWeight="Bold"/>
+                            </Button>
+                            <TextBox Grid.Column="2" Text="{Binding Year, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" HorizontalContentAlignment="Center"/>
                         </Grid>
 
                         <!-- Genre -->
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Жанр:" Foreground="#CBD5E1" FontSize="11.5" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Genre, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Margin="0,2"/>
+                        <Grid Grid.Row="3" Grid.Column="1" Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding Genre, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Margin="0,0,4,0"/>
+                            <Button x:Name="GenreDropdownBtn" Grid.Column="1" Click="GenreDropdownBtn_Click" ToolTip="Выбрать жанры по частоте использования (разделитель |)"
+                                    Style="{StaticResource ChipButton}" Height="28" Padding="8,0" Background="#1E2030" BorderBrush="#3B3F58">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="🏷️" FontSize="11" Margin="0,0,3,0"/>
+                                    <TextBlock Text="▾" FontSize="10" Foreground="#A5B4FC" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Modern Fluent Popup for Genre Selection -->
+                            <Popup x:Name="GenrePopup" IsOpen="{Binding IsGenrePopupOpen, Mode=TwoWay}" PlacementTarget="{Binding ElementName=GenreDropdownBtn}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" VerticalOffset="4" HorizontalOffset="-215">
+                                <Border Background="#161724" BorderBrush="#3B3F58" BorderThickness="1" CornerRadius="10" Width="260" MaxHeight="320" Padding="8">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Search box -->
+                                        <Grid Grid.Row="0" Margin="0,0,0,6">
+                                            <TextBox Text="{Binding GenreSearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkTextBox}" Height="28" Padding="6,2" FontSize="11"/>
+                                            <TextBlock Text="🔍 Поиск или новый жанр..." Foreground="#6B7280" FontSize="10.5" VerticalAlignment="Center" Margin="8,0,0,0" IsHitTestVisible="False"
+                                                       Visibility="{Binding HasGenreSearchText, Converter={StaticResource InverseBoolToVis}}"/>
+                                        </Grid>
+
+                                        <!-- Genre list sorted by frequency -->
+                                        <ScrollViewer Grid.Row="1" MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                                            <ItemsControl ItemsSource="{Binding FilteredGenres}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Button Click="GenreItem_Click" Tag="{Binding Name}" Margin="0,1" Padding="6,4" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalContentAlignment="Stretch">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="Button">
+                                                                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                                                    <ContentPresenter/>
+                                                                                </Border>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                                        <Setter TargetName="b" Property="Background" Value="#25283D"/>
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="20"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0" Text="✔" Foreground="#10B981" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"
+                                                                           Visibility="{Binding IsSelected, Converter={StaticResource BoolToVis}}"/>
+                                                                <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="#F3F4F6" FontSize="11.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                                <Border Grid.Column="2" Background="#26273B" CornerRadius="4" Padding="5,1" Margin="4,0,0,0">
+                                                                    <TextBlock Text="{Binding CountBadge}" Foreground="#A5B4FC" FontSize="9.5" FontWeight="SemiBold"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+
+                                        <!-- Bottom: Add custom genre if not in list -->
+                                        <Button Grid.Row="2" Click="AddCustomGenre_Click" Style="{StaticResource SecondaryButton}" Height="26" Margin="0,6,0,0"
+                                                Visibility="{Binding CanAddCustomGenre, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="{Binding AddCustomGenrePrompt}" FontSize="10.5"/>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </Popup>
+                        </Grid>
                     </Grid>
 
                     <!-- ================= RELEASE TYPE & COMMENTS ================= -->
@@ -673,7 +802,7 @@
 
                                     <!-- Version Badge on the RIGHT -->
                                     <Border Grid.Column="1" Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
-                                        <TextBlock Text="0.1 b4" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="0.1 b5" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
 

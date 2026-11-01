@@ -31,15 +31,23 @@ public partial class App : System.Windows.Application
         };
     }
 
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Log($"Application OnExit: code={e.ApplicationExitCode}");
+        base.OnExit(e);
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e);
+        Log("OnStartup entered");
         try
         {
-            string projectDir = @"x:\Obsidian Vaults\Antigravity 1-st\MusicStagerWidget";
-            string icoPath = Path.Combine(projectDir, "app.ico");
-            TrayIconHelper.EnsureIcoFileExists(icoPath);
+            base.OnStartup(e);
+            Log("base.OnStartup finished");
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Log($"base.OnStartup EXCEPTION: {ex}");
+        }
     }
 }

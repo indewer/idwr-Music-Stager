@@ -57,21 +57,21 @@ public static class TitleCaseHelper
 
         string text = input.Trim();
 
-        // 1. Separate letters and digits (e.g. "Top10Most" -> "Top 10 Most", "Sof2047" -> "Sof 2047", "lvl70" -> "lvl 70")
-        text = Regex.Replace(text, @"(?<=[a-zA-Z])(?=\d)|(?<=\d)(?=[a-zA-Z])", " ");
+        // 1. Separate letters and digits (e.g. "Top10Most" -> "Top 10 Most", "Трек01" -> "Трек 01")
+        text = Regex.Replace(text, @"(?<=[\p{L}])(?=\d)|(?<=\d)(?=[\p{L}])", " ");
 
-        // 2. Split CamelCase runs if any (e.g. "SomeTitle" -> "Some Title", "iLoveBeer" -> "i Love Beer")
-        text = Regex.Replace(text, @"(?<=[a-z])(?=[A-Z])", " ");
+        // 2. Split CamelCase runs if any (e.g. "SomeTitle" -> "Some Title", "iLoveBeer" -> "i Love Beer", "мояПесня" -> "моя Песня")
+        text = Regex.Replace(text, @"(?<=[\p{Ll}])(?=[\p{Lu}])", " ");
 
-        // 2. Tokenize by splitting letter runs and non-letter runs
-        var matches = Regex.Matches(text, @"([a-zA-Z]+|[^a-zA-Z]+)");
+        // 3. Tokenize by splitting letter runs (including contractions like Don't, It's) and non-letter runs
+        var matches = Regex.Matches(text, @"([\p{L}]+(?:['’][\p{L}]+)*|[^\p{L}]+)");
         var sb = new StringBuilder();
 
         foreach (Match match in matches)
         {
             string val = match.Value;
 
-            if (Regex.IsMatch(val, @"^[a-zA-Z]+$"))
+            if (Regex.IsMatch(val, @"^[\p{L}]+(?:['’][\p{L}]+)*$"))
             {
                 // If it's a known acronym or Roman numeral, preserve original uppercase
                 if (PreservedAcronyms.Contains(val))
@@ -81,7 +81,8 @@ public static class TitleCaseHelper
                 }
 
                 // Check if word needs segmentation (even if TitleCased like Holycrud or Adecentcupofcoffee)
-                if (val.Length >= 4)
+                // Note: WordSegmenter uses an English frequency dictionary, so apply to pure Latin words
+                if (val.Length >= 4 && Regex.IsMatch(val, @"^[a-zA-Z]+$"))
                 {
                     var subwords = WordSegmenter.Segment(val);
                     if (subwords.Count > 1)
@@ -95,7 +96,7 @@ public static class TitleCaseHelper
                     }
                 }
 
-                // Single word: capitalize first letter, lower the rest
+                // Single word or contraction: capitalize first letter, lower the rest
                 sb.Append(CapitalizeWord(val));
             }
             else

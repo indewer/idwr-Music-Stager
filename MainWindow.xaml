@@ -944,7 +944,7 @@
 
                                     <!-- Version Badge on the RIGHT -->
                                     <Border Grid.Column="1" Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
-                                        <TextBlock Text="0.1 b8" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="0.1 b9" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
 

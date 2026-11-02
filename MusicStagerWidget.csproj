@@ -8,12 +8,12 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <AssemblyName>idwr-Music-Stager-v0.1-b7</AssemblyName>
+    <AssemblyName>idwr-Music-Stager-v0.1-b8</AssemblyName>
     <RootNamespace>MusicStagerWidget</RootNamespace>
     <AssemblyTitle>(idwr) Music Stager</AssemblyTitle>
     <Product>(idwr) Music Stager</Product>
-    <Version>0.1.0-b7</Version>
-    <FileVersion>0.1.0.7</FileVersion>
+    <Version>0.1.0-b8</Version>
+    <FileVersion>0.1.0.8</FileVersion>
     <Authors>indewer</Authors>
   </PropertyGroup>
 

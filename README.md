@@ -1,6 +1,6 @@
 # 🎵 (idwr) Music Stager
 
-[![Version](https://img.shields.io/badge/version-0.1%20b7-indigo.svg)](#)
+[![Version](https://img.shields.io/badge/version-0.1%20b8-indigo.svg)](#)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-blue.svg)](#)
 [![Framework](https://img.shields.io/badge/.NET-10.0-purple.svg)](#)
 [![Author](https://img.shields.io/badge/author-@indewer-blueviolet.svg)](https://t.me/indewer)
@@ -82,13 +82,19 @@
     * Визуальное отображение и редактирование индивидуального артиста с иконкой `🎤` в списке треков.
     * Корректная работа с сборниками разных артистов (Various Artists / VA).
 
+14. **🖼️ Круглые портреты исполнителей в iTunes (Apple Music `atID`)**:
+    * Автоматический поиск цифрового `artistId` через публичный каталог iTunes Store API.
+    * Встраивание системного 28-байтного атома `atID` в контейнеры `.m4a` (ALAC/AAC).
+    * iTunes подтягивает официальное фото артиста в кружок медиатеки **напрямую по ID**, игнорируя текстовые метки `(USA)`, `(RUS)`, `(UK)`.
+    * Опция отключается в один клик в окне настроек ⚙️ («Загружать портреты артистов»).
+
 ---
 
 ## 🚀 Запуск
 
 * **Быстрый запуск:** дважды кликните по файлу `Запустить MusicStager.bat` в корне репозитория.
 * Либо запустите напрямую актуальный исполняемый файл:
-  `MusicStagerWidget\publish\idwr-Music-Stager-v0.1-b7.exe`
+  `MusicStagerWidget\publish\idwr-Music-Stager-v0.1-b8.exe`
 
 ---
 

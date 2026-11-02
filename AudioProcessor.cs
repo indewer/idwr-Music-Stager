@@ -257,6 +257,16 @@ public static class AudioProcessor
 
         try
         {
+            uint? appleArtistId = null;
+            if (settings.FetchAppleArtistId && !string.IsNullOrWhiteSpace(targetArtist))
+            {
+                try
+                {
+                    appleArtistId = await AppleMusicHelper.LookupArtistIdAsync(targetArtist, ct);
+                }
+                catch { }
+            }
+
             int total = batch.Tracks.Count;
             int current = 0;
 
@@ -299,6 +309,12 @@ public static class AudioProcessor
 
                 // Write tags and cover using TagLib
                 ApplyTags(readyFilePath, track, finalTrackArtist, targetAlbumArtist, targetAlbum, targetYear, targetGenre, targetComment, coverBytes);
+
+                // If Apple Music Artist ID is enabled and file is M4A, embed atID atom for iTunes circular artist portrait
+                if (appleArtistId.HasValue && readyFilePath.EndsWith(".m4a", StringComparison.OrdinalIgnoreCase))
+                {
+                    AppleMusicHelper.TryWriteMp4ArtistId(readyFilePath, appleArtistId.Value);
+                }
 
                 // Move finished file directly to iTunes "Automatically Add to iTunes"
                 string destFileName = Path.GetFileName(readyFilePath);

@@ -314,6 +314,20 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool FetchAppleArtistId
+    {
+        get => _settings.FetchAppleArtistId;
+        set
+        {
+            if (_settings.FetchAppleArtistId != value)
+            {
+                _settings.FetchAppleArtistId = value;
+                _settings.Save();
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public bool IsLoaded
     {
         get => _isLoaded;

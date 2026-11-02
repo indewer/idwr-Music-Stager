@@ -924,7 +924,9 @@
                             <StackPanel>
                                 <CheckBox IsChecked="{Binding StartWithWindows}" Content="Запускать при старте Windows" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"/>
                                 <CheckBox IsChecked="{Binding AlwaysOnTop}" Content="Закрепить поверх всех окон" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"/>
-                                <CheckBox IsChecked="{Binding DeleteSource}" Content="Удалять исходные файлы после импорта в iTunes" Foreground="#F3F4F6" FontSize="12.5"/>
+                                <CheckBox IsChecked="{Binding DeleteSource}" Content="Удалять исходные файлы после импорта в iTunes" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"/>
+                                <CheckBox IsChecked="{Binding FetchAppleArtistId}" Content="Загружать портреты артистов (Apple Music atID)" Foreground="#F3F4F6" FontSize="12.5"
+                                          ToolTip="Прописывать скрытый цифровой ID артиста в M4A, чтобы iTunes загружал круглый портрет исполнителя даже при наличии суффиксов (USA)/(RUS)"/>
                             </StackPanel>
                         </Border>
 
@@ -942,7 +944,7 @@
 
                                     <!-- Version Badge on the RIGHT -->
                                     <Border Grid.Column="1" Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
-                                        <TextBlock Text="0.1 b7" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="0.1 b8" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Border>
                                 </Grid>
 

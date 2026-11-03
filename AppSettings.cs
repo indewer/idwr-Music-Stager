@@ -26,6 +26,8 @@ public class AppSettings
     public int JpegQuality { get; set; } = 95;
     public bool DeleteSourceAfterImport { get; set; } = false;
     public bool FetchAppleArtistId { get; set; } = true;
+    public bool AutoNotifyUpdates { get; set; } = true;
+    public DateTime? LastUpdateNotifyUtc { get; set; } = null;
 
     // Mapping: Base Artist -> Album Artist (with suffix, e.g. "The Plot In You" -> "The Plot In You (USA)")
     public Dictionary<string, string> KnownArtists { get; set; } = new(StringComparer.OrdinalIgnoreCase);

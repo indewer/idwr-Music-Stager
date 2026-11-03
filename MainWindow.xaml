@@ -373,8 +373,81 @@
             <Grid Grid.Row="1">
                 <!-- VIEW 1: STAGER (Drop zone or Batch Editor) -->
                 <Grid Visibility="{Binding IsWidgetViewVisible, Converter={StaticResource BoolToVis}}">
-                    <Grid>
-                        <!-- VIEW A: EMPTY DROP ZONE -->
+                    <StackPanel>
+                        <!-- UPDATE NOTIFICATION POPUP BANNER (Periodic 12-day launch prompt) -->
+                        <Border Visibility="{Binding IsUpdateNotificationVisible, Converter={StaticResource BoolToVis}}"
+                                Background="#142A22" BorderBrush="#059669" BorderThickness="1.2" CornerRadius="12"
+                                Padding="12,9" Margin="0,0,0,9">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Banner Title & Close -->
+                                <Grid Grid.Row="0" Margin="0,0,0,7">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="✨ " FontSize="11"/>
+                                        <TextBlock Text="Доступно обновление " Foreground="#E2E8F0" FontWeight="SemiBold" FontSize="12"/>
+                                        <Border Background="#065F46" CornerRadius="4" Padding="5,1">
+                                            <TextBlock Text="{Binding NewVersionTag}" Foreground="#6EE7B7" FontSize="10" FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <Button Style="{StaticResource HeaderIconButton}" Width="20" Height="20" HorizontalAlignment="Right"
+                                            Click="DismissUpdateNotification_Click" ToolTip="Закрыть">
+                                        <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" 
+                                              Fill="#9CA3AF" Stretch="Uniform" Width="8" Height="8"/>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Actions: [ Обновить ] [ Напомнить позже ] -->
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Content="{Binding UpdateButtonText}" Click="ApplyUpdate_Click"
+                                            Background="#059669" Foreground="#FFFFFF" FontWeight="SemiBold" FontSize="11" Height="27"
+                                            Margin="0,0,3,0" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="4,0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="b" Property="Background" Value="#10B981"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="1" Content="Напомнить позже" Click="RemindLater_Click"
+                                            Background="#1E293B" Foreground="#94A3B8" FontSize="11" Height="27"
+                                            Margin="3,0,0,0" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="4,0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="b" Property="Background" Value="#334155"/>
+                                                        <Setter Property="Foreground" Value="#F1F5F9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Grid>
+                            <!-- VIEW A: EMPTY DROP ZONE -->
                 <Border x:Name="DropZoneBorder" Background="#181924" BorderBrush="#353A52" BorderThickness="1.5" CornerRadius="12" Padding="20,24" Margin="0,0,0,8"
                         Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
                     <Border.Style>
@@ -877,6 +950,7 @@
                     </Border>
                 </StackPanel>
                     </Grid>
+                    </StackPanel>
                 </Grid>
 
                 <!-- VIEW 2: SETTINGS PANEL -->
@@ -924,6 +998,8 @@
                             <StackPanel>
                                 <CheckBox IsChecked="{Binding StartWithWindows}" Content="Запускать при старте Windows" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"/>
                                 <CheckBox IsChecked="{Binding AlwaysOnTop}" Content="Закрепить поверх всех окон" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"/>
+                                <CheckBox IsChecked="{Binding AutoNotifyUpdates}" Content="Уведомлять об обновлениях (раз в 12 дней)" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"
+                                          ToolTip="Показывать всплывающее предложение обновиться при запуске не чаще раза в 12 дней. Бейдж в настройках доступен всегда."/>
                                 <CheckBox IsChecked="{Binding DeleteSource}" Content="Удалять исходные файлы после импорта в iTunes" Foreground="#F3F4F6" FontSize="12.5" Margin="0,0,0,8"/>
                                 <CheckBox IsChecked="{Binding FetchAppleArtistId}" Content="Загружать портреты артистов (Apple Music atID)" Foreground="#F3F4F6" FontSize="12.5"
                                           ToolTip="Прописывать скрытый цифровой ID артиста в M4A, чтобы iTunes загружал круглый портрет исполнителя даже при наличии суффиксов (USA)/(RUS)"/>
@@ -942,10 +1018,50 @@
                                     <!-- Title on the LEFT -->
                                     <TextBlock Grid.Column="0" Text="(idwr) Music Stager" Foreground="#C7D2FE" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
 
-                                    <!-- Version Badge on the RIGHT -->
-                                    <Border Grid.Column="1" Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
-                                        <TextBlock Text="0.1 b9" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    </Border>
+                                    <!-- Buttons & Badges on the RIGHT -->
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <!-- Manual Check-for-Updates Button -->
+                                        <Button Width="20" Height="20" Margin="0,0,5,0" Padding="0" Cursor="Hand" VerticalAlignment="Center"
+                                                Click="CheckUpdatesManual_Click" ToolTip="{Binding CheckUpdateTooltip}">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="b" Background="Transparent" CornerRadius="4" Width="20" Height="20">
+                                                        <Path x:Name="p" Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                                              Fill="#64748B" Stretch="Uniform" Width="11" Height="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="b" Property="Background" Value="#252839"/>
+                                                            <Setter TargetName="p" Property="Fill" Value="#A5B4FC"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+
+                                        <!-- Version Badge -->
+                                        <Border Background="#312E81" CornerRadius="4" Height="20" Padding="6,0" VerticalAlignment="Center">
+                                            <TextBlock Text="0.1 b9" Foreground="#A5B4FC" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </Border>
+
+                                        <!-- Unobtrusive Update Badge/Pill -->
+                                        <Button Margin="6,0,0,0" Height="20" Padding="7,0" Background="#065F46" BorderBrush="#10B981" BorderThickness="1"
+                                                VerticalAlignment="Center"
+                                                Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVis}}"
+                                                Click="ApplyUpdate_Click" ToolTip="Нажмите для автоматического обновления" Cursor="Hand">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="✨ " FontSize="9" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding UpdateButtonText}" Foreground="#A7F3D0" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
                                 </Grid>
 
                                 <!-- Contacts & GitHub -->

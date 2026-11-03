@@ -328,6 +328,65 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    // --- Update Notification State ---
+    private bool _isUpdateAvailable;
+    public bool IsUpdateAvailable
+    {
+        get => _isUpdateAvailable;
+        set => SetField(ref _isUpdateAvailable, value);
+    }
+
+    private bool _isUpdateNotificationVisible;
+    public bool IsUpdateNotificationVisible
+    {
+        get => _isUpdateNotificationVisible;
+        set => SetField(ref _isUpdateNotificationVisible, value);
+    }
+
+    private string _newVersionTag = string.Empty;
+    public string NewVersionTag
+    {
+        get => _newVersionTag;
+        set => SetField(ref _newVersionTag, value);
+    }
+
+    private string _downloadUrl = string.Empty;
+
+    private bool _isUpdating;
+    public bool IsUpdating
+    {
+        get => _isUpdating;
+        set => SetField(ref _isUpdating, value);
+    }
+
+    private string _updateButtonText = "Обновить";
+    public string UpdateButtonText
+    {
+        get => _updateButtonText;
+        set => SetField(ref _updateButtonText, value);
+    }
+
+    private string _checkUpdateTooltip = "Проверить обновления";
+    public string CheckUpdateTooltip
+    {
+        get => _checkUpdateTooltip;
+        set => SetField(ref _checkUpdateTooltip, value);
+    }
+
+    public bool AutoNotifyUpdates
+    {
+        get => _settings.AutoNotifyUpdates;
+        set
+        {
+            if (_settings.AutoNotifyUpdates != value)
+            {
+                _settings.AutoNotifyUpdates = value;
+                _settings.Save();
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public bool IsLoaded
     {
         get => _isLoaded;
@@ -777,6 +836,95 @@ public class MainViewModel : INotifyPropertyChanged
     public MainViewModel(AppSettings settings)
     {
         _settings = settings;
+
+        // Silent check on launch; triggers popup if 12-day notification is due
+        Task.Run(async () =>
+        {
+            await Task.Delay(1500);
+            System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+            {
+                CheckPeriodicUpdatesAsync(isStartup: true);
+            });
+        });
+    }
+
+    private bool _isCheckingUpdates;
+    public async Task CheckUpdatesManuallyAsync()
+    {
+        if (_isCheckingUpdates) return;
+        _isCheckingUpdates = true;
+        CheckUpdateTooltip = "Проверка...";
+
+        try
+        {
+            var res = await UpdateHelper.CheckForUpdateAsync();
+            if (res.IsUpdateAvailable && !string.IsNullOrEmpty(res.DownloadUrl))
+            {
+                _downloadUrl = res.DownloadUrl;
+                NewVersionTag = res.LatestVersionTag;
+                IsUpdateAvailable = true;
+                CheckUpdateTooltip = $"Доступно обновление: {res.LatestVersionTag}!";
+            }
+            else
+            {
+                CheckUpdateTooltip = "У вас установлена последняя версия ✓";
+            }
+        }
+        catch
+        {
+            CheckUpdateTooltip = "Не удалось проверить обновления";
+        }
+        finally
+        {
+            _isCheckingUpdates = false;
+        }
+    }
+
+    public async void CheckPeriodicUpdatesAsync(bool isStartup = false)
+    {
+        try
+        {
+            var res = await UpdateHelper.CheckForUpdateAsync();
+            if (res.IsUpdateAvailable && !string.IsNullOrEmpty(res.DownloadUrl))
+            {
+                _downloadUrl = res.DownloadUrl;
+                NewVersionTag = res.LatestVersionTag;
+                IsUpdateAvailable = true;
+
+                if (isStartup && _settings.AutoNotifyUpdates)
+                {
+                    bool shouldShowNotification = !_settings.LastUpdateNotifyUtc.HasValue ||
+                        (DateTime.UtcNow - _settings.LastUpdateNotifyUtc.Value).TotalDays >= 12;
+
+                    if (shouldShowNotification)
+                    {
+                        IsUpdateNotificationVisible = true;
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    public void DismissUpdateNotification(bool remindLater = true)
+    {
+        IsUpdateNotificationVisible = false;
+        if (remindLater)
+        {
+            _settings.LastUpdateNotifyUtc = DateTime.UtcNow;
+            _settings.Save();
+        }
+    }
+
+    public async Task ApplyUpdateAsync()
+    {
+        if (string.IsNullOrEmpty(_downloadUrl) || IsUpdating) return;
+        IsUpdating = true;
+        UpdateButtonText = "Загрузка...";
+        await UpdateHelper.DownloadAndInstallUpdateAsync(_downloadUrl, status =>
+        {
+            UpdateButtonText = status;
+        });
     }
 
     public void UpdateGeneratedComment()

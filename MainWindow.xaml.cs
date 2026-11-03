@@ -470,5 +470,29 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    #region Auto-Updater Handlers
+
+    private void DismissUpdateNotification_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.DismissUpdateNotification(remindLater: false);
+    }
+
+    private void RemindLater_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.DismissUpdateNotification(remindLater: true);
+    }
+
+    private async void ApplyUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        await _vm.ApplyUpdateAsync();
+    }
+
+    private async void CheckUpdatesManual_Click(object sender, RoutedEventArgs e)
+    {
+        await _vm.CheckUpdatesManuallyAsync();
+    }
+
+    #endregion
+
     #endregion
 }

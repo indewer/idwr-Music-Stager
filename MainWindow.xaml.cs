@@ -27,8 +27,16 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         App.Log("MainWindow ctor entered");
-        InitializeComponent();
-        App.Log("MainWindow InitializeComponent finished");
+        try
+        {
+            InitializeComponent();
+            App.Log("MainWindow InitializeComponent finished");
+        }
+        catch (Exception ex)
+        {
+            App.Log($"MainWindow InitializeComponent FAILED: {ex}");
+            throw;
+        }
 
         _settings = AppSettings.Load();
         _vm = new MainViewModel(_settings);
